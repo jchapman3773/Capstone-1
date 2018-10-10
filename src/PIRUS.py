@@ -1,15 +1,15 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 from utils import XyScaler
 import statsmodels.api as sm
-from sklearn.linear_model import LinearRegression, LassoCV, ElasticNetCV
-from sklearn.model_selection import train_test_split, KFold
+from sklearn.linear_model import LinearRegression, LogisticRegressionCV, LassoCV, ElasticNetCV
+from sklearn.model_selection import train_test_split
 from statsmodels.stats import outliers_influence, diagnostic
-from sklearn.base import clone
 import matplotlib as mpl
 mpl.rcParams.update({
-    'figure.figsize'      : (15,15),
+    'figure.figsize'      : (20,20),
     'font.size'           : 20.0,
     'axes.titlesize'      : 'large',
     'axes.labelsize'      : 'medium',
@@ -66,6 +66,11 @@ class Data:
         self.scale_data()
         self.split_data()
 
+    def make_heatmap(self):
+        corr = self.clean_data.corr()
+        sns.heatmap(corr,xticklabels=corr.columns,yticklabels=corr.columns)
+        plt.savefig('Correlation_Heatmap.png')
+
 class Model(Data):
 
     def __init__(self,data,model,predict,name):
@@ -97,9 +102,13 @@ class Model(Data):
     def plot_ROC(self):
         pass
 
-    def get_vifs(self):
+    def print_vifs(self):
         for idx, col in enumerate(self.X_train.columns):
             print(f"{col}: {outliers_influence.variance_inflation_factor(self.X_train.values,idx)}")
+
+    def print_coefs(self):
+        for idx, col in enumerate(self.X_train.columns):
+            print(f"{col}: {self.model.coef_[idx]}")
 
     def get_goldsfeltquandt(self):
         print(diagnostic.het_goldfeldquandt(self.trained_model.resid, self.trained_model.model.exog))
@@ -116,6 +125,7 @@ class Model(Data):
 if __name__ == '__main__':
     PIRUS = Model(df, LassoCV(), 'Violent','Lasso')
     PIRUS.clean_split_fit()
-    PIRUS.plot_coef_log_alphas()
-    # PIRUS.get_vifs()
+    # PIRUS.plot_coef_log_alphas()
+    PIRUS.print_coefs()
+    PIRUS.make_heatmap()
     plt.show()
