@@ -90,9 +90,12 @@ class LinearModel(Data):
         plt.xlim([alphas[0], alphas[-1]])
         plt.savefig(f'../plots/{self.name}_{self.predict}_kfold_mean_scores.png')
 
-    def print_score(self):
-        score = self.model.score(self.X_test,self.y_test)
-        print(f"{self.name} Score (predict {self.predict}): {score}")
+    def print_score(self,test_train='Train'):
+        if test_train == 'Test':
+            score = self.model.score(self.X_test,self.y_test)
+        else:
+            score = self.model.score(self.X_train,self.y_train)
+        print(f"{test_train} Score: {score}")
 
     def print_vifs(self):
         for idx, col in enumerate(self.X_train.columns):
@@ -113,11 +116,12 @@ class LinearModel(Data):
 if __name__ == '__main__':
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
     PIRUS_Lasso = LinearModel(df, LassoCV(cv=10), 'Violent','Lasso')
-    PIRUS_Elastic = LinearModel(df, ElasticNetCV(cv=10), 'Violent','ElasticNet')
+    # PIRUS_Elastic = LinearModel(df, ElasticNetCV(cv=10), 'Violent','ElasticNet')
     PIRUS_Lasso.clean_split_fit()
-    PIRUS_Elastic.clean_split_fit()
+    # PIRUS_Elastic.clean_split_fit()
     PIRUS_Lasso.print_score()
-    PIRUS_Elastic.print_score()
+    PIRUS_Lasso.print_score('Test')
+    # PIRUS_Elastic.print_score()
     # PIRUS_Elastic.plot_mse()
     # plt.show()
     # PIRUS_Elastic.plot_coef_log_alphas()

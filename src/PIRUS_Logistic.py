@@ -8,6 +8,7 @@ import statsmodels.api as sm
 from sklearn.linear_model import Lasso, LassoCV, ElasticNetCV, LogisticRegressionCV, LogisticRegression
 from sklearn.model_selection import train_test_split, GridSearchCV, KFold
 from sklearn.svm import l1_min_c
+from sklearn.metrics import roc_curve
 from statsmodels.stats import outliers_influence, diagnostic
 import matplotlib as mpl
 mpl.rcParams.update({
@@ -27,25 +28,24 @@ class LogisticModel(Data):
         super().__init__(data,predict)
         self.model = model
         self.name = name
+        self.Cs = None
+        self.log_Cs = None
         self.scaler = XyScaler()
 
     def fit_model(self):
         self.model.fit(self.X_train,self.y_train)
 
+    def get_Cs(self):
+        self.Cs = self.model.Cs_
+        self.log_Cs = np.log10(self.Cs)
+
     def clean_split_fit(self):
         self.prep_data()
         self.fit_model()
+        self.get_Cs()
 
     def plot_coef_log_alphas(self):
-        clf = LogisticRegression(penalty='l1', solver='saga')
-        cs = l1_min_c(self.X_train, self.y_train, loss='log') * np.logspace(0, 7, 16)
-        coefs_ = []
-        for c in cs:
-            clf.set_params(C=c)
-            clf.fit(self.X_train, self.y_train)
-            coefs_.append(clf.coef_.ravel().copy())
-
-        plt.plot(np.log10(cs), np.array(coefs_))
+        plt.plot(self.log_Cs, self.model.coefs_paths_[1][1])
         # coeffs = self.model.coefs_paths_.values
         plt.axvline(np.log10(self.model.C_),linestyle='--')
         plt.title(f'{self.name} Path')
@@ -66,8 +66,7 @@ class LogisticModel(Data):
 
     def plot_scores_kfold(self):
         logistic = LogisticRegression(penalty='l1', solver='saga', random_state=0)
-        # Cs = np.linspace(0.001, 1000, 30)
-        Cs = l1_min_c(self.X_train, self.y_train, loss='log') * np.logspace(0, 7, 16)
+        Cs = np.logspace(-4, 4, 30)
 
         tuned_parameters = [{'C': Cs }]
 
@@ -91,11 +90,25 @@ class LogisticModel(Data):
         plt.savefig(f'../plots/{self.name}_{self.predict}_kfold_mean_scores.png')
 
     def plot_ROC(self):
-        pass
+        # fpr,tpr = roc_curve(self.y_train,self.model.scores_[1])
+        y_prob = self.model.predict_proba(self.X_train)[:,1]
+        import pdb; pdb.set_trace()
+        fpr, tpr, _ = roc_curve(self.y_train,y_prob)
+        plt.plot(fpr, tpr, color='darkorange', label='ROC curve')
+        plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
+        # plt.xlim([0.0, 1.0])
+        # plt.ylim([0.0, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('ROC Curve')
+        plt.savefig(f'../plots/{self.name}_{self.predict}_ROC_curve')
 
-    def print_score(self):
-        score = self.model.score(self.X_test,self.y_test)
-        print(f"Score: {score}")
+    def print_score(self,test_train='Train'):
+        if test_train == 'Test':
+            score = self.model.score(self.X_test,self.y_test)
+        else:
+            score = self.model.score(self.X_train,self.y_train)
+        print(f"{test_train} Score: {score}")
 
     def print_vifs(self):
         for idx, col in enumerate(self.X_train.columns):
@@ -115,10 +128,11 @@ if __name__ == '__main__':
     PIRUS.clean_split_fit()
     # PIRUS.try_many_imputes()
     PIRUS.print_score()
+    PIRUS.print_score('Test')
     # PIRUS.plot_coef_log_alphas()
     # plt.show()
     # PIRUS.plot_scores_kfold()
     # plt.show()
     # PIRUS.plot_mse()
     # plt.show()
-    # PIRUS.print_goldsfeltquandt()
+    PIRUS.plot_ROC()

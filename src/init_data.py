@@ -72,7 +72,8 @@ class Data:
     def prep_data(self):
         self.create_clean_data()
         self.scale_data()
-        self.fix_imbalance()
+        if set(self.df[self.predict]) == {0,1}:
+            self.fix_imbalance()
         self.split_data()
 
     def make_heatmap(self):
@@ -82,4 +83,8 @@ class Data:
         plt.savefig('Correlation_Heatmap.png')
 
     def plot_scatter(self,var1,var2):
-        plt.scatter(var1,var2)
+        plt.scatter(self.df[var1],self.df[var2],alpha=0.5)
+        plt.ylabel(var1)
+        plt.xlabel(var2)
+        plt.title(f'{var1} vs {var2}')
+        plt.savefig(f'../plots/{var1}_vs_{var2}')
