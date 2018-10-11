@@ -1,3 +1,4 @@
+from init_data import Data
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,61 +20,7 @@ mpl.rcParams.update({
     'legend.loc'          : 'upper right'
 })
 
-class Data:
-
-    def __init__(self,data,predict):
-        self.df = data
-        self.predict = predict
-        self.X = None
-        self.y = None
-        self.y_log = None
-        self.X_scale = None
-        self.y_scale = None
-        self.X_train = None
-        self.X_test = None
-        self.y_train = None
-        self.y_test = None
-        self.clean_data = None
-
-    def create_clean_data(self):
-        columns = list(self.df.loc[:,'Broad_Ethnicity':'Aspirations'].columns)
-        columns += ['Violent']
-        columns.remove('Age_Child')
-        self.df.Gender.replace({1:0,2:1})
-        self.df.Language_English.replace({1:2,-88:1})
-        self.df[['Education_Change','Change_Performance','Work_History','Social_Stratum_Adulthood']].replace(-88,'NaN')
-        self.clean_data = self.df[columns].select_dtypes(exclude='object').fillna(df.mean())
-        self.y = self.clean_data[self.predict]
-        self.y_log = np.log10(self.clean_data[self.predict])
-        self.X = self.clean_data.drop(self.predict,axis=1)
-
-    def fix_imbalance(self):
-        pass
-
-    def scale_data(self):
-        X_scale,y_scale = self.scaler.fit_transform(self.X,self.y)
-        self.X_scale = pd.DataFrame(data=X_scale,columns=self.X.columns,index=self.X.index)
-        self.y_scale = pd.Series(data=y_scale)
-
-    def split_data(self,split=0.2):
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X_scale, self.y, test_size=split)
-
-    def prep_data(self):
-        self.create_clean_data()
-        self.fix_imbalance()
-        self.scale_data()
-        self.split_data()
-
-    def make_heatmap(self):
-        corr = self.clean_data.corr()
-        sns.heatmap(corr,xticklabels=corr.columns,yticklabels=corr.columns)
-        plt.subplots_adjust(left=0.25,bottom=0.3)
-        plt.savefig('Correlation_Heatmap.png')
-
-    def plot_scatter(self,var1,var2):
-        plt.scatter(var1,var2)
-
-class Model(Data):
+class LinearModel(Data):
 
     def __init__(self,data,model,predict,name):
         super().__init__(data,predict)
@@ -97,7 +44,7 @@ class Model(Data):
         plt.title(f'Coefficient Descent of {self.name}')
         plt.xlabel(r'log($\alpha$)')
         plt.ylabel('Coefficients')
-        plt.savefig(f'{self.name}_{self.predict}_coefficient_descent.png')
+        plt.savefig(f'../plots/{self.name}_{self.predict}_coefficient_descent.png')
 
     def plot_mse(self):
         mse_path = self.model.mse_path_[:,1:]
@@ -108,7 +55,7 @@ class Model(Data):
         plt.xlabel(r'log($\alpha$)')
         plt.ylabel('MSE')
         plt.legend()
-        plt.savefig(f'{self.name}_{self.predict}_MSE_plot.png')
+        plt.savefig(f'../plots/{self.name}_{self.predict}_MSE_plot.png')
 
     def plot_scores_kfold(self):
         lasso = Lasso(random_state=0)
@@ -136,7 +83,7 @@ class Model(Data):
         plt.xlabel(r'$\alpha$')
         plt.axhline(np.max(scores), linestyle='--', color='.5')
         plt.xlim([alphas[0], alphas[-1]])
-        plt.savefig(f'{self.name}_{self.predict}_kfold_mean_scores.png')
+        plt.savefig(f'../plots/{self.name}_{self.predict}_kfold_mean_scores.png')
 
     def print_score(self):
         score = self.model.score(self.X_test,self.y_test)
@@ -168,8 +115,8 @@ class Model(Data):
 
 if __name__ == '__main__':
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
-    PIRUS_Lasso = Model(df, LassoCV(cv=10), 'Violent','Lasso')
-    PIRUS_Elastic = Model(df, ElasticNetCV(cv=10), 'Violent','ElasticNet')
+    PIRUS_Lasso = LinearModel(df, LassoCV(cv=10), 'Violent','Lasso')
+    PIRUS_Elastic = LinearModel(df, ElasticNetCV(cv=10), 'Violent','ElasticNet')
     PIRUS_Lasso.clean_split_fit()
     PIRUS_Elastic.clean_split_fit()
     PIRUS_Lasso.print_score()
