@@ -36,11 +36,18 @@ class Data:
 
     def create_clean_data(self):
         columns = list(self.df.loc[:,'Broad_Ethnicity':'Aspirations'].columns)
-        columns += ['Violent']
+        columns += ['Violent','Plot_Target1','Criminal_Severity','Current_Status','Group_Membership',
+                    'Length_Group','Radical_Behaviors','Radical_Beliefs','Abuse_Child','Psychological',
+                    'Alcohol_Drug','Close_Family','Previous_Criminal_Activity','Angry_US']
         columns.remove('Age_Child')
-        self.df.Gender.replace({1:0,2:1})
-        self.df.Language_English.replace({1:2,-88:1})
-        self.df[['Education_Change','Change_Performance','Work_History','Social_Stratum_Adulthood']].replace(-88,'NaN')
+        self.df.Plot_Target1.replace(-88,0,inplace=True)
+        self.df.Length_Group.replace(-88,0,inplace=True)
+        self.df.Gender.replace({1:0,2:1},inplace=True)
+        self.df.Language_English.replace({1:2,-88:1},inplace=True)
+        self.df.Education_Change.replace(-88,'NaN',inplace=True)
+        self.df.Change_Performance.replace(-88,'NaN',inplace=True)
+        self.df.Work_History.replace(-88,'NaN',inplace=True)
+        self.df.Social_Stratum_Adulthood.replace(-88,'NaN',inplace=True)
         self.incomplete_data = self.df[columns].select_dtypes(exclude='object')
 
     def impute(self,method=KNN(5)):
@@ -84,9 +91,10 @@ class Data:
 
     def make_heatmap(self):
         corr = self.clean_data.corr()
+        sns.set(font_scale=1.1)
         sns.heatmap(corr,xticklabels=corr.columns,yticklabels=corr.columns)
         plt.subplots_adjust(left=0.25,bottom=0.3)
-        plt.savefig('Correlation_Heatmap.png')
+        plt.savefig('../plots/Correlation_Heatmap.png')
 
     def plot_scatter(self,var1,var2):
         plt.scatter(self.df[var1],self.df[var2],alpha=0.5)

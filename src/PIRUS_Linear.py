@@ -94,12 +94,14 @@ class LinearModel(Data):
         print(f"{test_train} Score: {score}")
 
     def print_vifs(self):
-        for idx, col in enumerate(self.X_train.columns):
-            print(f"{col}: {outliers_influence.variance_inflation_factor(self.X_train.values,idx)}")
+        with open(f"../data/{self.name}_vifs.txt", "w") as text_file:
+            for idx, col in enumerate(self.X.columns):
+                print(f"{col}, {outliers_influence.variance_inflation_factor(self.X.values,idx)}",file=text_file)
 
     def print_coefs(self):
-        for idx, col in enumerate(self.X_train.columns):
-            print(f"{col}: {self.model.coef_[idx]}")
+        with open(f"../data/{self.name}_coefs.txt", "w") as text_file:
+            for idx, col in enumerate(self.X.columns):
+                print(f"{col}, {self.model.coef_[idx]}",file=text_file)
 
     def print_goldsfeltquandt(self):
         linear_model = sm.OLS(self.y_train, self.X_train).fit()
@@ -107,7 +109,8 @@ class LinearModel(Data):
 
     def print_linear_summary(self):
         linear_model = sm.OLS(self.y_train, self.X_train).fit()
-        print(linear_model.summary2())
+        with open(f"../data/{self.name}_linear_summary.txt", "w") as text_file:
+            print(linear_model.summary2(),file=text_file)
 
     def try_imputes_scores(self):
         methods = [SimpleFill(), KNN(1), KNN(2), KNN(3), KNN(4), KNN(5), IterativeSVD(), MatrixFactorization()]

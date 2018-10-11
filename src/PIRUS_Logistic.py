@@ -99,16 +99,19 @@ class LogisticModel(Data):
         return score
 
     def print_vifs(self):
-        for idx, col in enumerate(self.X_train.columns):
-            print(f"{col}: {outliers_influence.variance_inflation_factor(self.X_train.values,idx)}")
+        with open(f"../data/{self.name}_vifs.txt", "w") as text_file:
+            for idx, col in enumerate(self.X.columns):
+                print(f"{col}, {outliers_influence.variance_inflation_factor(self.X.values,idx)}",file=text_file)
 
     def print_coefs(self):
-        for idx, col in enumerate(self.X_train.columns):
-            print(f"{col}: {self.model.coef_[idx]}")
+        with open(f"../data/{self.name}_coefs.txt", "w") as text_file:
+            for idx, col in enumerate(self.X.columns):
+                print(f"{col}, {self.model.coef_[0][idx]}",file=text_file)
 
     def print_logistic_summary(self):
         logistic_model = sm.Logit(self.y_train, self.X_train).fit()
-        print(logistic_model.summary2())
+        with open(f"../data/{self.name}_logistic_summary.txt", "w") as text_file:
+            print(logistic_model.summary2(),file=text_file)
 
     def try_imputes_scores(self):
         methods = [SimpleFill(), KNN(1), KNN(2), KNN(3), KNN(4), KNN(5), IterativeSVD(), MatrixFactorization()]
@@ -122,12 +125,13 @@ class LogisticModel(Data):
 
 if __name__ == '__main__':
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
-    PIRUS = LogisticModel(df, LogisticRegressionCV(penalty='l1',cv=10,solver='saga'), 'Violent','LogisticRegression')
+    PIRUS = LogisticModel(df, LogisticRegressionCV(penalty='l1',cv=10,solver='saga',max_iter=500), 'Violent','LogisticRegression')
     PIRUS.clean_split_fit()
-    # PIRUS.print_score()
-    # PIRUS.print_score('Test')
-    PIRUS.plot_coef_log_alphas()
-    plt.close()
-    PIRUS.plot_scores_kfold()
-    plt.close()
-    PIRUS.plot_ROC()
+    PIRUS.print_score()
+    PIRUS.print_score('Test')
+    # PIRUS.plot_coef_log_alphas()
+    # plt.close()
+    # PIRUS.plot_scores_kfold()
+    # plt.close()
+    # PIRUS.plot_ROC()
+    PIRUS.make_heatmap()
