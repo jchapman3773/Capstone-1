@@ -3,10 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from fancyimpute import SimpleFill, KNN, IterativeSVD, MatrixFactorization
+from imblearn.over_sampling import SMOTE
 from utils import XyScaler
 import statsmodels.api as sm
 from sklearn.model_selection import train_test_split
-from statsmodels.stats import outliers_influence, diagnostic
 import matplotlib as mpl
 mpl.rcParams.update({
     'figure.figsize'      : (15,15),
@@ -43,13 +43,12 @@ class Data:
         self.df.Language_English.replace({1:2,-88:1})
         self.df[['Education_Change','Change_Performance','Work_History','Social_Stratum_Adulthood']].replace(-88,'NaN')
         self.incomplete_data = self.df[columns].select_dtypes(exclude='object')
-        # self.clean_data = self.df[columns].select_dtypes(exclude='object').fillna(self.df.mean())
         self.clean_data = self.impute()
         self.y = self.clean_data[self.predict]
         self.X = self.clean_data.drop(self.predict,axis=1)
 
     def impute(self,method=KNN(5)):
-        return pd.DataFrame(data=method.fit_transform(self.incomplete_data), \
+        return pd.DataFrame(data=method.fit_transform(self.incomplete_data),
                         columns=self.incomplete_data.columns,index=self.incomplete_data.index)
 
     def try_many_imputes(self):
@@ -59,21 +58,21 @@ class Data:
             mse = ((data-self.incomplete_data) ** 2).sum().mean()
             print(m.__class__.__name__, mse)
 
-    def fix_imbalance(self):
-        pass
-
     def scale_data(self):
         X_scale,y_scale = self.scaler.fit_transform(self.X,self.y)
         self.X_scale = pd.DataFrame(data=X_scale,columns=self.X.columns,index=self.X.index)
-        # self.y_scale = pd.Series(data=y_scale)
+
+    def fix_imbalance(self,method=SMOTE()):
+        os = method
+        self.X_scale,self.y = os.fit_sample(self.X_scale,self.y)
 
     def split_data(self,split=0.2):
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X_scale, self.y, test_size=split)
 
     def prep_data(self):
         self.create_clean_data()
-        self.fix_imbalance()
         self.scale_data()
+        self.fix_imbalance()
         self.split_data()
 
     def make_heatmap(self):

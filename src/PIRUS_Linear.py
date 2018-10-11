@@ -37,6 +37,11 @@ class LinearModel(Data):
     def fit_model(self):
         self.model.fit(self.X_train,self.y_train)
 
+    def clean_split_fit(self):
+        self.prep_data()
+        self.fit_model()
+        self.get_alphas()
+
     def plot_coef_log_alphas(self):
         coeffs = self.model.path(self.X_train,self.y_train)[1]
         plt.plot(self.log_alphas,coeffs.T)
@@ -47,7 +52,7 @@ class LinearModel(Data):
         plt.savefig(f'../plots/{self.name}_{self.predict}_coefficient_descent.png')
 
     def plot_mse(self):
-        mse_path = self.model.mse_path_[:,1:]
+        mse_path = self.model.mse_path_
         mean_mse = mse_path.mean(axis=1)
         plt.plot(self.log_alphas,mse_path,linestyle='--')
         plt.plot(self.log_alphas,mean_mse,label='Mean MSE',linewidth=5,color='k')
@@ -89,9 +94,6 @@ class LinearModel(Data):
         score = self.model.score(self.X_test,self.y_test)
         print(f"{self.name} Score (predict {self.predict}): {score}")
 
-    def print_alpha(self):
-        print(f"{self.name} Alpha (predict {self.predict}): {self.model.alpha_}")
-
     def print_vifs(self):
         for idx, col in enumerate(self.X_train.columns):
             print(f"{col}: {outliers_influence.variance_inflation_factor(self.X_train.values,idx)}")
@@ -108,11 +110,6 @@ class LinearModel(Data):
         linear_model = sm.OLS(self.y_train, self.X_train).fit()
         print(linear_model.summary2())
 
-    def clean_split_fit(self):
-        self.prep_data()
-        self.fit_model()
-        self.get_alphas()
-
 if __name__ == '__main__':
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
     PIRUS_Lasso = LinearModel(df, LassoCV(cv=10), 'Violent','Lasso')
@@ -120,9 +117,13 @@ if __name__ == '__main__':
     PIRUS_Lasso.clean_split_fit()
     PIRUS_Elastic.clean_split_fit()
     PIRUS_Lasso.print_score()
-    PIRUS_Lasso.print_alpha()
     PIRUS_Elastic.print_score()
-    PIRUS_Elastic.print_alpha()
+    # PIRUS_Elastic.plot_mse()
+    # plt.show()
+    # PIRUS_Elastic.plot_coef_log_alphas()
+    # plt.show()
+    # PIRUS_Elastic.plot_scores_kfold()
+    # plt.show()
     # PIRUS_Lasso.plot_mse()
     # plt.show()
     # PIRUS_Lasso.plot_coef_log_alphas()

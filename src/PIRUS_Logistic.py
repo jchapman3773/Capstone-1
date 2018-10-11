@@ -7,6 +7,7 @@ from utils import XyScaler
 import statsmodels.api as sm
 from sklearn.linear_model import Lasso, LassoCV, ElasticNetCV, LogisticRegressionCV, LogisticRegression
 from sklearn.model_selection import train_test_split, GridSearchCV, KFold
+from sklearn.svm import l1_min_c
 from statsmodels.stats import outliers_influence, diagnostic
 import matplotlib as mpl
 mpl.rcParams.update({
@@ -31,18 +32,29 @@ class LogisticModel(Data):
     def fit_model(self):
         self.model.fit(self.X_train,self.y_train)
 
+    def clean_split_fit(self):
+        self.prep_data()
+        self.fit_model()
+
     def plot_coef_log_alphas(self):
-        coeffs = self.model.coefs_paths_.values
-        import pdb; pdb.set_trace()
-        plt.plot(self.log_alphas,coeffs)
-        plt.axvline(np.log10(self.model.alpha_),linestyle='--')
-        plt.title(f'Coefficient Descent of {self.name}')
-        plt.xlabel('Cs')
+        clf = LogisticRegression(penalty='l1', solver='saga')
+        cs = l1_min_c(self.X_train, self.y_train, loss='log') * np.logspace(0, 7, 16)
+        coefs_ = []
+        for c in cs:
+            clf.set_params(C=c)
+            clf.fit(self.X_train, self.y_train)
+            coefs_.append(clf.coef_.ravel().copy())
+
+        plt.plot(np.log10(cs), np.array(coefs_))
+        # coeffs = self.model.coefs_paths_.values
+        plt.axvline(np.log10(self.model.C_),linestyle='--')
+        plt.title(f'{self.name} Path')
+        plt.xlabel('log(C)')
         plt.ylabel('Coefficients')
         plt.savefig(f'../plots/{self.name}_{self.predict}_coefficient_descent.png')
 
     def plot_mse(self):
-        mse_path = self.model.mse_path_[:,1:]
+        mse_path = self.model.mse_path_
         mean_mse = mse_path.mean(axis=1)
         plt.plot(self.log_alphas,mse_path,linestyle='--')
         plt.plot(self.log_alphas,mean_mse,label='Mean MSE',linewidth=5,color='k')
@@ -54,7 +66,8 @@ class LogisticModel(Data):
 
     def plot_scores_kfold(self):
         logistic = LogisticRegression(penalty='l1', solver='saga', random_state=0)
-        Cs = np.linspace(0.001, 1000, 30)
+        # Cs = np.linspace(0.001, 1000, 30)
+        Cs = l1_min_c(self.X_train, self.y_train, loss='log') * np.logspace(0, 7, 16)
 
         tuned_parameters = [{'C': Cs }]
 
@@ -80,15 +93,9 @@ class LogisticModel(Data):
     def plot_ROC(self):
         pass
 
-    def predict_y(self):
-        return self.model.predict(self.X_test)
-
     def print_score(self):
         score = self.model.score(self.X_test,self.y_test)
         print(f"Score: {score}")
-
-    def print_alpha(self):
-        print(f"Alpha: {self.model.alpha_}")
 
     def print_vifs(self):
         for idx, col in enumerate(self.X_train.columns):
@@ -98,25 +105,19 @@ class LogisticModel(Data):
         for idx, col in enumerate(self.X_train.columns):
             print(f"{col}: {self.model.coef_[idx]}")
 
-    def print_goldsfeltquandt(self):
-        linear_model = sm.OLS(self.y_train, self.X_train).fit()
-        print(diagnostic.het_goldfeldquandt(linear_model.resid, linear_model.model.exog))
-
     def print_linear_summary(self):
-        linear_model = sm.OLS(self.y_train, self.X_train).fit()
-        print(linear_model.summary2())
-
-    def clean_split_fit(self):
-        self.prep_data()
-        self.fit_model()
+        logistic_model = sm.Logit(self.y_train, self.X_train).fit()
+        print(logistic_model.summary2())
 
 if __name__ == '__main__':
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
     PIRUS = LogisticModel(df, LogisticRegressionCV(penalty='l1',cv=10,solver='saga'), 'Violent','LogisticRegression')
     PIRUS.clean_split_fit()
     # PIRUS.try_many_imputes()
-    PIRUS.print_score()
+    # PIRUS.print_score()
     # PIRUS.plot_coef_log_alphas()
+    # plt.show()
     # PIRUS.plot_mse()
     # PIRUS.plot_scores_kfold()
-    plt.show()
+    # plt.show()
+    # PIRUS.print_goldsfeltquandt()
