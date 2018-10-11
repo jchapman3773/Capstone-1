@@ -77,13 +77,7 @@ class Model(Data):
         super().__init__(data,predict)
         self.model = model
         self.name = name
-        self.alphas = None
-        self.log_alphas = None
         self.scaler = XyScaler()
-
-    def get_alphas(self):
-        self.alphas = self.model.alphas_
-        self.log_alphas = np.log10(self.alphas)
 
     def fit_model(self):
         self.model.fit(self.X_train,self.y_train)
@@ -94,9 +88,9 @@ class Model(Data):
         plt.plot(self.log_alphas,coeffs)
         plt.axvline(np.log10(self.model.alpha_),linestyle='--')
         plt.title(f'Coefficient Descent of {self.name}')
-        plt.xlabel(r'log($\alpha$)')
+        plt.xlabel('Cs')
         plt.ylabel('Coefficients')
-        plt.savefig(f'Coefficient Descent of {self.name}.png')
+        plt.savefig(f'{self.name}_{self.predict}_coefficient_descent.png')
 
     def plot_mse(self):
         mse_path = self.model.mse_path_[:,1:]
@@ -107,7 +101,7 @@ class Model(Data):
         plt.xlabel(r'log($\alpha$)')
         plt.ylabel('MSE')
         plt.legend()
-        plt.savefig('RMSE_plot.png')
+        plt.savefig(f'{self.name}_{self.predict}_MSE_plot.png')
 
     def plot_scores_kfold(self):
         logistic = LogisticRegression(penalty='l1', solver='saga', random_state=0)
@@ -132,7 +126,7 @@ class Model(Data):
         plt.xlabel('Cs')
         plt.axhline(np.max(scores), linestyle='--', color='.5')
         # plt.xlim([alphas[0], alphas[-1]])
-        plt.savefig('kfold_mean_scores.png')
+        plt.savefig(f'{self.name}_{self.predict}_kfold_mean_scores.png')
 
     def plot_ROC(self):
         pass
@@ -166,15 +160,13 @@ class Model(Data):
     def clean_split_fit(self):
         self.prep_data()
         self.fit_model()
-        # self.get_alphas()
 
 if __name__ == '__main__':
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
-    PIRUS = Model(df, LogisticRegressionCV(penalty='l1',cv=10,solver='saga'), 'Violent','Logistic Regression')
+    PIRUS = Model(df, LogisticRegressionCV(penalty='l1',cv=10,solver='saga'), 'Violent','LogisticRegression')
     PIRUS.clean_split_fit()
-    # PIRUS.plot_coef_log_alphas()
     # PIRUS.print_score()
-    # PIRUS.print_alpha()
-    # # PIRUS.plot_mse()
+    # PIRUS.plot_coef_log_alphas()
+    # PIRUS.plot_mse()
     PIRUS.plot_scores_kfold()
     plt.show()
