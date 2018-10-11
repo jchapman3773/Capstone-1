@@ -4,12 +4,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from utils import XyScaler
 import statsmodels.api as sm
-from sklearn.linear_model import LinearRegression, LogisticRegressionCV, LassoCV, ElasticNetCV
-from sklearn.model_selection import train_test_split
+from sklearn.linear_model import Lasso, LassoCV, ElasticNetCV, LogisticRegressionCV, LogisticRegression
+from sklearn.model_selection import train_test_split, GridSearchCV, KFold
 from statsmodels.stats import outliers_influence, diagnostic
 import matplotlib as mpl
 mpl.rcParams.update({
-    'figure.figsize'      : (20,20),
+    'figure.figsize'      : (15,15),
     'font.size'           : 20.0,
     'axes.titlesize'      : 'large',
     'axes.labelsize'      : 'medium',
@@ -18,10 +18,6 @@ mpl.rcParams.update({
     'legend.fontsize'     : 'large',
     'legend.loc'          : 'upper right'
 })
-
-# Import Data with -99 as NaN
-df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
-
 
 class Data:
 
@@ -43,7 +39,7 @@ class Data:
         columns += ['Violent']
         columns.remove('Age_Child')
         self.df.Gender.replace({1:0,2:1})
-        self.df.Language_English.replace(-88,1)
+        self.df.Language_English.replace({1:2,-88:1})
         self.df[['Education_Change','Change_Performance','Work_History','Social_Stratum_Adulthood']].replace(-88,'NaN')
         self.clean_data = self.df[columns].select_dtypes(exclude='object').fillna(df.mean())
         self.y = self.clean_data[self.predict]
@@ -69,7 +65,11 @@ class Data:
     def make_heatmap(self):
         corr = self.clean_data.corr()
         sns.heatmap(corr,xticklabels=corr.columns,yticklabels=corr.columns)
+        plt.subplots_adjust(left=0.25,bottom=0.3)
         plt.savefig('Correlation_Heatmap.png')
+
+    def plot_scatter(self,var1,var2):
+        plt.scatter(var1,var2)
 
 class Model(Data):
 
@@ -90,17 +90,60 @@ class Model(Data):
 
     def plot_coef_log_alphas(self):
         coeffs = self.model.path(self.X_train,self.y_train)[1]
-        plt.plot(self.log_alphas,coeffs.T)
+        plt.axvline(np.log10(self.model.alpha_),linestyle='--')
         plt.title(f'Coefficient Descent of {self.name}')
         plt.xlabel(r'log($\alpha$)')
         plt.ylabel('Coefficients')
         plt.savefig(f'Coefficient Descent of {self.name}.png')
 
     def plot_mse(self):
-        pass
+        mse_path = self.model.mse_path_[:,1:]
+        mean_mse = mse_path.mean(axis=1)
+        plt.plot(self.log_alphas,mse_path,linestyle='--')
+        plt.plot(self.log_alphas,mean_mse,label='Mean MSE',linewidth=5,color='k')
+        plt.title(r'MSE vs log($\alpha$)')
+        plt.xlabel(r'log($\alpha$)')
+        plt.ylabel('MSE')
+        plt.legend()
+        plt.savefig('RMSE_plot.png')
+
+    def plot_scores_kfold(self):
+        logistic = LogisticRegression(penalty='l1', solver='saga', random_state=0)
+        Cs = np.linspace(0.001, 1000, 30)
+
+        tuned_parameters = [{'C': Cs }]
+
+        clf = GridSearchCV(logistic, tuned_parameters, cv=10, refit=False)
+        clf.fit(self.X_train, self.y_train)
+        scores = clf.cv_results_['mean_test_score']
+        scores_std = clf.cv_results_['std_test_score']
+        plt.semilogx(Cs, scores)
+
+        # plot error lines showing +/- std. errors of the scores
+        std_error = scores_std / np.sqrt(10)
+
+        plt.semilogx(Cs, scores + std_error, 'b--')
+        plt.semilogx(Cs, scores - std_error, 'b--')
+        plt.fill_between(Cs, scores + std_error, scores - std_error, alpha=0.2)
+
+        plt.ylabel('CV score +/- std error')
+        plt.xlabel('Cs')
+        plt.axhline(np.max(scores), linestyle='--', color='.5')
+        # plt.xlim([alphas[0], alphas[-1]])
+        plt.savefig('kfold_mean_scores.png')
 
     def plot_ROC(self):
         pass
+
+    def predict_y(self):
+        return self.model.predict(self.X_test)
+
+    def print_score(self):
+        score = self.model.score(self.X_test,self.y_test)
+        print(f"Score: {score}")
+
+    def print_alpha(self):
+        print(f"Alpha: {self.model.alpha_}")
 
     def print_vifs(self):
         for idx, col in enumerate(self.X_train.columns):
@@ -110,10 +153,11 @@ class Model(Data):
         for idx, col in enumerate(self.X_train.columns):
             print(f"{col}: {self.model.coef_[idx]}")
 
-    def get_goldsfeltquandt(self):
-        print(diagnostic.het_goldfeldquandt(self.trained_model.resid, self.trained_model.model.exog))
+    def print_goldsfeltquandt(self):
+        linear_model = sm.OLS(self.y_train, self.X_train).fit()
+        print(diagnostic.het_goldfeldquandt(linear_model.resid, linear_model.model.exog))
 
-    def get_linear_summary(self):
+    def print_linear_summary(self):
         linear_model = sm.OLS(self.y_train, self.X_train).fit()
         print(linear_model.summary2())
 
@@ -124,8 +168,11 @@ class Model(Data):
 
 if __name__ == '__main__':
     PIRUS = Model(df, LassoCV(), 'Violent','Lasso')
+    df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
     PIRUS.clean_split_fit()
     # PIRUS.plot_coef_log_alphas()
-    PIRUS.print_coefs()
-    PIRUS.make_heatmap()
+    # PIRUS.print_score()
+    # PIRUS.print_alpha()
+    # # PIRUS.plot_mse()
+    PIRUS.plot_scores_kfold()
     plt.show()
