@@ -5,7 +5,7 @@ import seaborn as sns
 from fancyimpute import SimpleFill, KNN, IterativeSVD, MatrixFactorization
 from imblearn.over_sampling import SMOTE
 from utils import XyScaler
-import statsmodels.api as sm
+from sklearn.metrics import mean_squared_error as mse
 from sklearn.model_selection import train_test_split
 import matplotlib as mpl
 mpl.rcParams.update({
@@ -27,7 +27,6 @@ class Data:
         self.X = None
         self.y = None
         self.X_scale = None
-        self.y_scale = None
         self.X_train = None
         self.X_test = None
         self.y_train = None
@@ -43,36 +42,43 @@ class Data:
         self.df.Language_English.replace({1:2,-88:1})
         self.df[['Education_Change','Change_Performance','Work_History','Social_Stratum_Adulthood']].replace(-88,'NaN')
         self.incomplete_data = self.df[columns].select_dtypes(exclude='object')
-        self.clean_data = self.impute()
-        self.y = self.clean_data[self.predict]
-        self.X = self.clean_data.drop(self.predict,axis=1)
 
     def impute(self,method=KNN(5)):
-        return pd.DataFrame(data=method.fit_transform(self.incomplete_data),
+        self.clean_data = pd.DataFrame(data=method.fit_transform(self.incomplete_data),
                         columns=self.incomplete_data.columns,index=self.incomplete_data.index)
+        return self.clean_data
 
     def try_many_imputes(self):
         methods = [SimpleFill(), KNN(1), KNN(2), KNN(3), KNN(4), KNN(5), IterativeSVD(), MatrixFactorization()]
+        mse_list = []
         for m in methods:
             data = self.impute(m)
-            mse = ((data-self.incomplete_data) ** 2).sum().mean()
-            print(m.__class__.__name__, mse)
+            mse_list += [(f'{m.__class__.__name__}',mse(self.incomplete_data.fillna(0),data))]
+        with open("../data/impute_mse.txt", "w") as text_file:
+            [print(f'{_[0]}, {_[1]}', file=text_file) for _ in mse_list]
+        return mse_list
+
+    def make_Xy(self):
+        self.y = self.clean_data[self.predict]
+        self.X = self.clean_data.drop(self.predict,axis=1)
 
     def scale_data(self):
-        X_scale,y_scale = self.scaler.fit_transform(self.X,self.y)
+        X_scale, _ = self.scaler.fit_transform(self.X,self.y)
         self.X_scale = pd.DataFrame(data=X_scale,columns=self.X.columns,index=self.X.index)
 
     def fix_imbalance(self,method=SMOTE()):
         os = method
         self.X_scale,self.y = os.fit_sample(self.X_scale,self.y)
 
-    def split_data(self,split=0.2):
+    def split_data(self,split=0.25):
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X_scale, self.y, test_size=split)
 
-    def prep_data(self):
+    def prep_data(self,impute=KNN(5)):
         self.create_clean_data()
+        self.impute(impute)
+        self.make_Xy()
         self.scale_data()
-        if set(self.df[self.predict]) == {0,1}:
+        if set(self.y) == {0,1}:
             self.fix_imbalance()
         self.split_data()
 

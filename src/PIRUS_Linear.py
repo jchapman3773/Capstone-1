@@ -49,6 +49,7 @@ class LinearModel(Data):
         plt.title(f'Coefficient Descent of {self.name}')
         plt.xlabel(r'log($\alpha$)')
         plt.ylabel('Coefficients')
+        plt.legend(np.append(self.X.columns.values,['Chosen Alpha']), fontsize = 'x-small',loc='upper left')
         plt.savefig(f'../plots/{self.name}_{self.predict}_coefficient_descent.png')
 
     def plot_mse(self):
@@ -56,7 +57,7 @@ class LinearModel(Data):
         mean_mse = mse_path.mean(axis=1)
         plt.plot(self.log_alphas,mse_path,linestyle='--')
         plt.plot(self.log_alphas,mean_mse,label='Mean MSE',linewidth=5,color='k')
-        # plt.title(r'MSE vs log($\alpha$)')
+        plt.title(r'MSE for kfolds vs log($\alpha$)')
         plt.xlabel(r'log($\alpha$)')
         plt.ylabel('MSE')
         plt.legend()
@@ -67,27 +68,22 @@ class LinearModel(Data):
         alphas = np.logspace(-4, -0.5, 30)
 
         tuned_parameters = [{'alpha': alphas}]
-        n_folds = 5
 
-        clf = GridSearchCV(lasso, tuned_parameters, cv=n_folds, refit=False)
+        clf = GridSearchCV(lasso, tuned_parameters, cv=10, refit=False)
         clf.fit(self.X_train, self.y_train)
         scores = clf.cv_results_['mean_test_score']
         scores_std = clf.cv_results_['std_test_score']
         plt.semilogx(alphas, scores)
 
-        # plot error lines showing +/- std. errors of the scores
-        std_error = scores_std / np.sqrt(n_folds)
-
+        std_error = scores_std / np.sqrt(10)
         plt.semilogx(alphas, scores + std_error, 'b--')
         plt.semilogx(alphas, scores - std_error, 'b--')
-
-        # alpha=0.2 controls the translucency of the fill color
         plt.fill_between(alphas, scores + std_error, scores - std_error, alpha=0.2)
 
-        plt.ylabel('CV score +/- std error')
+        plt.title('CV score +/- std error')
+        plt.ylabel('Score')
         plt.xlabel(r'$\alpha$')
         plt.axhline(np.max(scores), linestyle='--', color='.5')
-        plt.xlim([alphas[0], alphas[-1]])
         plt.savefig(f'../plots/{self.name}_{self.predict}_kfold_mean_scores.png')
 
     def print_score(self,test_train='Train'):
@@ -113,24 +109,34 @@ class LinearModel(Data):
         linear_model = sm.OLS(self.y_train, self.X_train).fit()
         print(linear_model.summary2())
 
+    def try_imputes_scores(self):
+        methods = [SimpleFill(), KNN(1), KNN(2), KNN(3), KNN(4), KNN(5), IterativeSVD(), MatrixFactorization()]
+        impute_scores = []
+        for m in methods:
+            self.clean_split_fit(m)
+            impute_scores += [(m.__class__.__name__,self.print_score(),self.print_score('Test'))]
+        with open(f"../data/{self.name}_impute_scores.txt", "w") as text_file:
+            [print(f'{_[0]}, {_[1]}, {_[2]}',file=text_file) for _ in impute_scores]
+        return impute_scores
+
 if __name__ == '__main__':
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
     PIRUS_Lasso = LinearModel(df, LassoCV(cv=10), 'Violent','Lasso')
-    # PIRUS_Elastic = LinearModel(df, ElasticNetCV(cv=10), 'Violent','ElasticNet')
+    PIRUS_Elastic = LinearModel(df, ElasticNetCV(cv=10), 'Violent','ElasticNet')
     PIRUS_Lasso.clean_split_fit()
-    # PIRUS_Elastic.clean_split_fit()
+    PIRUS_Elastic.clean_split_fit()
     PIRUS_Lasso.print_score()
     PIRUS_Lasso.print_score('Test')
-    # PIRUS_Elastic.print_score()
-    # PIRUS_Elastic.plot_mse()
-    # plt.show()
-    # PIRUS_Elastic.plot_coef_log_alphas()
-    # plt.show()
-    # PIRUS_Elastic.plot_scores_kfold()
-    # plt.show()
-    # PIRUS_Lasso.plot_mse()
-    # plt.show()
-    # PIRUS_Lasso.plot_coef_log_alphas()
-    # plt.show()
-    # PIRUS_Lasso.plot_scores_kfold()
-    # plt.show()
+    PIRUS_Elastic.print_score()
+    PIRUS_Elastic.plot_mse()
+    plt.close()
+    PIRUS_Elastic.plot_coef_log_alphas()
+    plt.close()
+    PIRUS_Elastic.plot_scores_kfold()
+    plt.close()
+    PIRUS_Lasso.plot_mse()
+    plt.close()
+    PIRUS_Lasso.plot_coef_log_alphas()
+    plt.close()
+    PIRUS_Lasso.plot_scores_kfold()
+    plt.close()
