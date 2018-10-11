@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV, KFold
 from statsmodels.stats import outliers_influence, diagnostic
 import matplotlib as mpl
 mpl.rcParams.update({
-    'figure.figsize'      : (15,15),
+    'figure.figsize'      : (15,10),
     'font.size'           : 20.0,
     'axes.titlesize'      : 'large',
     'axes.labelsize'      : 'medium',
@@ -26,6 +26,7 @@ class Data:
         self.predict = predict
         self.X = None
         self.y = None
+        self.y_log = None
         self.X_scale = None
         self.y_scale = None
         self.X_train = None
@@ -43,6 +44,7 @@ class Data:
         self.df[['Education_Change','Change_Performance','Work_History','Social_Stratum_Adulthood']].replace(-88,'NaN')
         self.clean_data = self.df[columns].select_dtypes(exclude='object').fillna(df.mean())
         self.y = self.clean_data[self.predict]
+        self.y_log = np.log10(self.clean_data[self.predict])
         self.X = self.clean_data.drop(self.predict,axis=1)
 
     def fix_imbalance(self):
@@ -54,7 +56,7 @@ class Data:
         self.y_scale = pd.Series(data=y_scale)
 
     def split_data(self,split=0.2):
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X_scale, self.y_scale, test_size=split)
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X_scale, self.y, test_size=split)
 
     def prep_data(self):
         self.create_clean_data()
@@ -90,60 +92,58 @@ class Model(Data):
 
     def plot_coef_log_alphas(self):
         coeffs = self.model.path(self.X_train,self.y_train)[1]
+        plt.plot(self.log_alphas,coeffs.T)
         plt.axvline(np.log10(self.model.alpha_),linestyle='--')
         plt.title(f'Coefficient Descent of {self.name}')
         plt.xlabel(r'log($\alpha$)')
         plt.ylabel('Coefficients')
-        plt.savefig(f'Coefficient Descent of {self.name}.png')
+        plt.savefig(f'{self.name}_{self.predict}_coefficient_descent.png')
 
     def plot_mse(self):
         mse_path = self.model.mse_path_[:,1:]
         mean_mse = mse_path.mean(axis=1)
         plt.plot(self.log_alphas,mse_path,linestyle='--')
         plt.plot(self.log_alphas,mean_mse,label='Mean MSE',linewidth=5,color='k')
-        plt.title(r'MSE vs log($\alpha$)')
+        # plt.title(r'MSE vs log($\alpha$)')
         plt.xlabel(r'log($\alpha$)')
         plt.ylabel('MSE')
         plt.legend()
-        plt.savefig('RMSE_plot.png')
+        plt.savefig(f'{self.name}_{self.predict}_MSE_plot.png')
 
     def plot_scores_kfold(self):
-        logistic = LogisticRegression(penalty='l1', solver='saga', random_state=0)
-        Cs = np.linspace(0.001, 1000, 30)
+        lasso = Lasso(random_state=0)
+        alphas = np.logspace(-4, -0.5, 30)
 
-        tuned_parameters = [{'C': Cs }]
+        tuned_parameters = [{'alpha': alphas}]
+        n_folds = 5
 
-        clf = GridSearchCV(logistic, tuned_parameters, cv=10, refit=False)
+        clf = GridSearchCV(lasso, tuned_parameters, cv=n_folds, refit=False)
         clf.fit(self.X_train, self.y_train)
         scores = clf.cv_results_['mean_test_score']
         scores_std = clf.cv_results_['std_test_score']
-        plt.semilogx(Cs, scores)
+        plt.semilogx(alphas, scores)
 
         # plot error lines showing +/- std. errors of the scores
-        std_error = scores_std / np.sqrt(10)
+        std_error = scores_std / np.sqrt(n_folds)
 
-        plt.semilogx(Cs, scores + std_error, 'b--')
-        plt.semilogx(Cs, scores - std_error, 'b--')
-        plt.fill_between(Cs, scores + std_error, scores - std_error, alpha=0.2)
+        plt.semilogx(alphas, scores + std_error, 'b--')
+        plt.semilogx(alphas, scores - std_error, 'b--')
+
+        # alpha=0.2 controls the translucency of the fill color
+        plt.fill_between(alphas, scores + std_error, scores - std_error, alpha=0.2)
 
         plt.ylabel('CV score +/- std error')
-        plt.xlabel('Cs')
+        plt.xlabel(r'$\alpha$')
         plt.axhline(np.max(scores), linestyle='--', color='.5')
-        # plt.xlim([alphas[0], alphas[-1]])
-        plt.savefig('kfold_mean_scores.png')
-
-    def plot_ROC(self):
-        pass
-
-    def predict_y(self):
-        return self.model.predict(self.X_test)
+        plt.xlim([alphas[0], alphas[-1]])
+        plt.savefig(f'{self.name}_{self.predict}_kfold_mean_scores.png')
 
     def print_score(self):
         score = self.model.score(self.X_test,self.y_test)
-        print(f"Score: {score}")
+        print(f"{self.name} Score (predict {self.predict}): {score}")
 
     def print_alpha(self):
-        print(f"Alpha: {self.model.alpha_}")
+        print(f"{self.name} Alpha (predict {self.predict}): {self.model.alpha_}")
 
     def print_vifs(self):
         for idx, col in enumerate(self.X_train.columns):
@@ -167,12 +167,24 @@ class Model(Data):
         self.get_alphas()
 
 if __name__ == '__main__':
-    PIRUS = Model(df, LassoCV(), 'Violent','Lasso')
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
-    PIRUS.clean_split_fit()
-    # PIRUS.plot_coef_log_alphas()
-    # PIRUS.print_score()
-    # PIRUS.print_alpha()
-    # # PIRUS.plot_mse()
-    PIRUS.plot_scores_kfold()
+    PIRUS_Lasso = Model(df, LassoCV(cv=10), 'Violent','Lasso')
+    PIRUS_Elastic = Model(df, ElasticNetCV(cv=10), 'Violent','ElasticNet')
+    PIRUS_Lasso.clean_split_fit()
+    PIRUS_Elastic.clean_split_fit()
+    # PIRUS_Lasso.print_score()
+    # PIRUS_Lasso.print_alpha()
+    # PIRUS_Elastic.print_score()
+    # PIRUS_Elastic.print_alpha()
+    PIRUS_Lasso.plot_mse()
+    plt.show()
+    PIRUS_Elastic.plot_mse()
+    plt.show()
+    PIRUS_Lasso.plot_coef_log_alphas()
+    plt.show()
+    PIRUS_Elastic.plot_coef_log_alphas()
+    plt.show()
+    PIRUS_Lasso.plot_scores_kfold()
+    plt.show()
+    PIRUS_Elastic.plot_scores_kfold()
     plt.show()
