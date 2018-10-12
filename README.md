@@ -128,7 +128,7 @@ x22     0.1615      0.0824     1.9590    0.0501    -0.0001     0.3231
 
 ```
 
-![Coefficient Descent, L1](https://github.com/jchapman3773/Capstone-1/blob/master/plot/L1_LogisticRegression_Violent_coefficient_descent.png)
+![Coefficient Descent, L1](https://github.com/jchapman3773/Capstone-1/blob/master/plots/L1_LogisticRegression_Violent_coefficient_descent.png)
 
 ![Mean Scores, L1](https://github.com/jchapman3773/Capstone-1/blob/master/plots/L1_LogisticRegression_Violent_kfold_mean_scores.png)
 
