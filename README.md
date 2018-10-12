@@ -72,7 +72,7 @@ SimpleFill | 1775 | 0.632
 KNN 1 | 1836 | 0.774
 KNN 2 | 1800 | 0.788
 KNN 3 | 1827 | 0.821
-KNN 4 | 18354 | 0.829
+KNN 4 | 1835 | 0.829
 KNN 5 | 1823 | 0.826
 IterativeSVD | 74 | 0.62
 MatrixFactorization | 1858 | 0.719
