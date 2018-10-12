@@ -7,6 +7,7 @@ from utils import XyScaler
 import statsmodels.api as sm
 from sklearn.linear_model import Lasso, LassoCV, ElasticNetCV, LogisticRegressionCV, LogisticRegression
 from sklearn.model_selection import train_test_split, GridSearchCV, KFold
+from sklearn.feature_selection import RFE
 from statsmodels.stats import outliers_influence, diagnostic
 import matplotlib as mpl
 mpl.rcParams.update({
@@ -29,6 +30,14 @@ class LinearModel(Data):
         self.alphas = None
         self.log_alphas = None
         self.scaler = XyScaler()
+        self.columns = None
+
+    def select_features(self,features=22):
+        selector = RFE(self.model,features)
+        self.selector = selector.fit(self.X_train,self.y_train)
+        self.X_train = self.X_train.[:,self.selector.support_]
+        self.X_test = self.X_test.[:,self.selector.support_]
+        self.columns = self.X.loc[:,self.selector.support_].columns
 
     def get_alphas(self):
         self.alphas = self.model.alphas_
@@ -39,6 +48,7 @@ class LinearModel(Data):
 
     def clean_split_fit(self):
         self.prep_data()
+        self.select_features()
         self.fit_model()
         self.get_alphas()
 
@@ -49,7 +59,7 @@ class LinearModel(Data):
         plt.title(f'Coefficient Descent of {self.name}')
         plt.xlabel(r'log($\alpha$)')
         plt.ylabel('Coefficients')
-        plt.legend(np.append(self.X.columns.values,['Chosen Alpha']), fontsize = 'x-small',loc='upper left')
+        plt.legend(np.append(self.columns.values,['Chosen Alpha']), fontsize = 'x-small',loc='upper left')
         plt.savefig(f'../plots/{self.name}_{self.predict}_coefficient_descent.png')
 
     def plot_mse(self):
@@ -86,12 +96,13 @@ class LinearModel(Data):
         plt.axhline(np.max(scores), linestyle='--', color='.5')
         plt.savefig(f'../plots/{self.name}_{self.predict}_kfold_mean_scores.png')
 
-    def print_score(self,test_train='Train'):
-        if test_train == 'Test':
+    def print_score(self,test=True):
+        if test:
             score = self.model.score(self.X_test,self.y_test)
         else:
             score = self.model.score(self.X_train,self.y_train)
-        print(f"{test_train} Score: {score}")
+        print(f"{'Test' if test else 'Train'} Score: {score}")
+        return score
 
     def print_vifs(self):
         with open(f"../data/{self.name}_vifs.txt", "w") as text_file:
@@ -100,7 +111,7 @@ class LinearModel(Data):
 
     def print_coefs(self):
         with open(f"../data/{self.name}_coefs.txt", "w") as text_file:
-            for idx, col in enumerate(self.X.columns):
+            for idx, col in enumerate(self.columns):
                 print(f"{col}, {self.model.coef_[idx]}",file=text_file)
 
     def print_goldsfeltquandt(self):
@@ -113,9 +124,8 @@ class LinearModel(Data):
             print(linear_model.summary2(),file=text_file)
 
     def try_imputes_scores(self):
-        methods = [SimpleFill(), KNN(1), KNN(2), KNN(3), KNN(4), KNN(5), IterativeSVD(), MatrixFactorization()]
         impute_scores = []
-        for m in methods:
+        for m in self.methods:
             self.clean_split_fit(m)
             impute_scores += [(m.__class__.__name__,self.print_score(),self.print_score('Test'))]
         with open(f"../data/{self.name}_impute_scores.txt", "w") as text_file:
@@ -129,7 +139,7 @@ if __name__ == '__main__':
     PIRUS_Lasso.clean_split_fit()
     PIRUS_Elastic.clean_split_fit()
     PIRUS_Lasso.print_score()
-    PIRUS_Lasso.print_score('Test')
+    PIRUS_Lasso.print_score(False)
     PIRUS_Elastic.print_score()
     PIRUS_Elastic.plot_mse()
     plt.close()

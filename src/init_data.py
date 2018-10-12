@@ -33,6 +33,7 @@ class Data:
         self.y_test = None
         self.incomplete_data = None
         self.clean_data = None
+        self.methods = [SimpleFill(), KNN(1), KNN(2), KNN(3), KNN(4), KNN(5), IterativeSVD(), MatrixFactorization()]
 
     def create_clean_data(self):
         columns = list(self.df.loc[:,'Broad_Ethnicity':'Aspirations'].columns)
@@ -56,9 +57,8 @@ class Data:
         return self.clean_data
 
     def try_many_imputes(self):
-        methods = [SimpleFill(), KNN(1), KNN(2), KNN(3), KNN(4), KNN(5), IterativeSVD(), MatrixFactorization()]
         mse_list = []
-        for m in methods:
+        for m in self.methods:
             data = self.impute(m)
             mse_list += [(f'{m.__class__.__name__}',mse(self.incomplete_data.fillna(0),data))]
         with open("../data/impute_mse.txt", "w") as text_file:

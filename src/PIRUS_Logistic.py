@@ -7,8 +7,9 @@ from utils import XyScaler
 import statsmodels.api as sm
 from sklearn.linear_model import Lasso, LassoCV, ElasticNetCV, LogisticRegressionCV, LogisticRegression
 from sklearn.model_selection import train_test_split, GridSearchCV, KFold
+from sklearn.feature_selection import RFE
 from sklearn.svm import l1_min_c
-from sklearn.metrics import roc_curve,auc
+from sklearn.metrics import roc_curve,auc,confusion_matrix,classification_report
 from statsmodels.stats import outliers_influence, diagnostic
 from fancyimpute import SimpleFill, KNN, IterativeSVD, MatrixFactorization
 import matplotlib as mpl
@@ -31,7 +32,16 @@ class LogisticModel(Data):
         self.name = name
         self.Cs = None
         self.log_Cs = None
+        self.selector = None
+        self.columns = None
         self.scaler = XyScaler()
+
+    def select_features(self,features=22):
+        selector = RFE(self.model,features)
+        self.selector = selector.fit(self.X_train,self.y_train)
+        self.X_train = self.X_train[:,self.selector.support_]
+        self.X_test = self.X_test[:,self.selector.support_]
+        self.columns = self.X.loc[:,self.selector.support_].columns
 
     def fit_model(self):
         self.model.fit(self.X_train,self.y_train)
@@ -42,6 +52,7 @@ class LogisticModel(Data):
 
     def clean_split_fit(self,impute=KNN(5)):
         self.prep_data(impute)
+        self.select_features()
         self.fit_model()
         self.get_Cs()
 
@@ -51,7 +62,7 @@ class LogisticModel(Data):
         plt.title(f'Coefficient Descent of {self.name}')
         plt.xlabel('log(C)')
         plt.ylabel('Coefficients')
-        line_names = np.append(['Intercept'],self.X.columns.values)
+        line_names = np.append(['Intercept'],self.columns.values)
         plt.legend(np.append(line_names,['Chosen C']), fontsize = 'x-small',loc='upper right')
         plt.savefig(f'../plots/{self.name}_{self.predict}_coefficient_descent.png')
 
@@ -90,13 +101,23 @@ class LogisticModel(Data):
         plt.legend(loc="lower right")
         plt.savefig(f'../plots/{self.name}_{self.predict}_ROC_curve')
 
-    def print_score(self,test_train='Train'):
-        if test_train == 'Test':
+    def print_score(self,test=True):
+        if test:
             score = self.model.score(self.X_test,self.y_test)
         else:
             score = self.model.score(self.X_train,self.y_train)
-        print(f"{test_train} Score: {score}")
+        print(f"{'Test' if test else 'Train'} Score: {score}")
         return score
+
+    def print_confusion_matrix(self):
+        tn, fp, fn, tp = confusion_matrix(self.y_test,self.model.predict(self.X_test)).ravel()
+        with open(f"../data/{self.name}_confusion_matrix.txt", "w") as text_file:
+            print(f'{tn},{fp}\n{fn},{tp}',file=text_file)
+        return tn, fp, fn, tp
+
+    def print_classification_report(self):
+        with open(f"../data/{self.name}_classification_report.txt", "w") as text_file:
+            print(classification_report(self.y_test,self.model.predict(self.X_test)),file=text_file)
 
     def print_vifs(self):
         with open(f"../data/{self.name}_vifs.txt", "w") as text_file:
@@ -105,7 +126,7 @@ class LogisticModel(Data):
 
     def print_coefs(self):
         with open(f"../data/{self.name}_coefs.txt", "w") as text_file:
-            for idx, col in enumerate(self.X.columns):
+            for idx, col in enumerate(self.columns):
                 print(f"{col}, {self.model.coef_[0][idx]}",file=text_file)
 
     def print_logistic_summary(self):
@@ -114,9 +135,8 @@ class LogisticModel(Data):
             print(logistic_model.summary2(),file=text_file)
 
     def try_imputes_scores(self):
-        methods = [SimpleFill(), KNN(1), KNN(2), KNN(3), KNN(4), KNN(5), IterativeSVD(), MatrixFactorization()]
         impute_scores = []
-        for m in methods:
+        for m in self.methods:
             self.clean_split_fit(m)
             impute_scores += [(m.__class__.__name__,self.print_score(),self.print_score('Test'))]
         with open(f"../data/{self.name}_impute_scores.txt", "w") as text_file:
@@ -127,11 +147,22 @@ if __name__ == '__main__':
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
     PIRUS = LogisticModel(df, LogisticRegressionCV(penalty='l1',cv=10,solver='saga',max_iter=500), 'Violent','LogisticRegression')
     PIRUS.clean_split_fit()
-    PIRUS.print_score()
-    PIRUS.print_score('Test')
+
+    # PIRUS.print_score()
+    # PIRUS.print_score(False)
+    #
     # PIRUS.plot_coef_log_alphas()
     # plt.close()
     # PIRUS.plot_scores_kfold()
     # plt.close()
     # PIRUS.plot_ROC()
-    PIRUS.make_heatmap()
+    # plt.close()
+    # # PIRUS.make_heatmap()
+    #
+    # PIRUS.print_coefs()
+    # PIRUS.print_vifs()
+    # PIRUS.print_logistic_summary()
+    # PIRUS.print_confusion_matrix()
+    # PIRUS.print_classification_report()
+    print(PIRUS.clean_data.columns)
+    print(PIRUS.columns)
