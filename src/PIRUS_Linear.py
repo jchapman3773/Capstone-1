@@ -35,7 +35,7 @@ class LinearModel(Data):
     def select_features(self,features=22):
         selector = RFE(self.model,features)
         self.selector = selector.fit(self.X_train,self.y_train)
-        self.X_train = self.X_train.[:,self.selector.support_]
+        self.X_train = self.X_train[:,self.selector.support_]
         self.X_test = self.X_test[:,self.selector.support_]
         self.columns = self.X.loc[:,self.selector.support_].columns
 
@@ -135,18 +135,19 @@ class LinearModel(Data):
 if __name__ == '__main__':
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
     PIRUS_Lasso = LinearModel(df, LassoCV(cv=10), 'Violent','Lasso')
-    # PIRUS_Elastic = LinearModel(df, ElasticNetCV(cv=10), 'Violent','ElasticNet')
+    PIRUS_Elastic = LinearModel(df, ElasticNetCV(cv=10), 'Violent','ElasticNet')
     PIRUS_Lasso.clean_split_fit()
-    # PIRUS_Elastic.clean_split_fit()
+    PIRUS_Elastic.clean_split_fit()
     PIRUS_Lasso.print_score()
     PIRUS_Lasso.print_score(False)
-    # PIRUS_Elastic.print_score()
-    # PIRUS_Elastic.plot_mse()
-    # plt.close()
-    # PIRUS_Elastic.plot_coef_log_alphas()
-    # plt.close()
-    # PIRUS_Elastic.plot_scores_kfold()
-    # plt.close()
+    PIRUS_Elastic.print_score()
+    PIRUS_Elastic.print_score(False)
+    PIRUS_Elastic.plot_mse()
+    plt.close()
+    PIRUS_Elastic.plot_coef_log_alphas()
+    plt.close()
+    PIRUS_Elastic.plot_scores_kfold()
+    plt.close()
     PIRUS_Lasso.plot_mse()
     plt.close()
     PIRUS_Lasso.plot_coef_log_alphas()

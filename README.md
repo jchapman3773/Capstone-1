@@ -81,85 +81,84 @@ Before fitting my data, I used scikit-learn's RFE to select for 22 of my 32 feat
 
 At first, I tried LassoCV and ElasticNetCV as my models, but they didn't perform very well.
 
-Lasso Mean Score:
 ![Lasso Mean Score](https://github.com/jchapman3773/Capstone-1/blob/master/plots/Lasso_Violent_kfold_mean_scores.png)
 
-Lasso Mean MSE:
 ![Lasso Mean MSE](https://github.com/jchapman3773/Capstone-1/blob/master/plots/Lasso_Violent_MSE_plot.png)
 
 Then I tried LogisticRegressionCV with L1 regularization as a penalizer. This performed much better.
 The test and train scores were similar every time the model was ran.
 
 ```
-                          Results: Logit
+Results: Logit
 ==================================================================
-Model:              Logit            Pseudo R-squared: 0.506      
-Dependent Variable: y                AIC:              1173.0366  
-Date:               2018-10-11 22:02 BIC:              1292.0242  
-No. Observations:   1650             Log-Likelihood:   -564.52    
+Model:              Logit            Pseudo R-squared: 0.511      
+Dependent Variable: y                AIC:              1162.2929  
+Date:               2018-10-12 08:50 BIC:              1281.2805  
+No. Observations:   1650             Log-Likelihood:   -559.15    
 Df Model:           21               LL-Null:          -1143.7    
-Df Residuals:       1628             LLR p-value:      4.7880e-232
+Df Residuals:       1628             LLR p-value:      2.4278e-234
 Converged:          1.0000           Scale:            1.0000     
 No. Iterations:     7.0000                                        
 ---------------------------------------------------------------------
-        Coef.     Std.Err.       z       P>|z|      [0.025     0.975]
+Coef.     Std.Err.       z       P>|z|      [0.025     0.975]
 ---------------------------------------------------------------------
-x1     -0.2678      0.0916    -2.9246    0.0034    -0.4472    -0.0883  Broad_Ethnicity
-x2      0.1439      0.2240     0.6424    0.5206    -0.2951     0.5829  Age
-x3      0.1427      0.0924     1.5443    0.1225    -0.0384     0.3239  Marital_Status
-x4     -0.1583      0.1055    -1.5002    0.1336    -0.3651     0.0485  Gender
-x5      0.3151      0.0751     4.1971    0.0000     0.1680     0.4623  Religious_Background
-x6     -0.9015      0.1066    -8.4547    0.0000    -1.1105    -0.6925  Convert
-x7      0.5577      0.0959     5.8172    0.0000     0.3698     0.7457  Reawakening
-x8      0.0784      0.0910     0.8615    0.3890    -0.1000     0.2568  Immigrant_Generation
-x9      0.1498      0.2235     0.6704    0.5026    -0.2882     0.5878  Language_English
-x10     0.7189      0.1252     5.7423    0.0000     0.4736     0.9643  Student
-x11    -0.1558      0.0838    -1.8593    0.0630    -0.3199     0.0084  Social_Stratum_Childhood
-x12    -0.2476      0.0978    -2.5314    0.0114    -0.4394    -0.0559  Aspirations
-x13     0.4277      0.0987     4.3313    0.0000     0.2342     0.6212  Plot_Target1
-x14     1.2913      0.1313     9.8323    0.0000     1.0339     1.5487  Criminal_Severity
-x15     0.1095      0.0885     1.2377    0.2158    -0.0639     0.2829  Current_Status
-x16    -0.1195      0.0911    -1.3117    0.1896    -0.2980     0.0590  Length_Group
-x17     1.4687      0.1444    10.1709    0.0000     1.1857     1.7517  Radical_Behaviors
-x18    -0.1105      0.0795    -1.3891    0.1648    -0.2664     0.0454  Abuse_Child
-x19     0.1725      0.0841     2.0515    0.0402     0.0077     0.3373  Psychological
-x20     0.0969      0.0817     1.1862    0.2355    -0.0632     0.2571  Alcohol_Drug
-x21     0.0917      0.0837     1.0955    0.2733    -0.0724     0.2559  Close_Family
-x22     0.1664      0.0834     1.9952    0.0460     0.0029     0.3299  Angry_US
+x1     -0.3831      0.0900    -4.2567    0.0000    -0.5595    -0.2067 Broad_Ethnicity
+x2      0.4008      0.1116     3.5913    0.0003     0.1821     0.6196  Age
+x3     -0.1161      0.0981    -1.1832    0.2367    -0.3084     0.0762  Children
+x4      0.2836      0.0748     3.7927    0.0001     0.1370     0.4301  Gender
+x5     -0.8680      0.1064    -8.1603    0.0000    -1.0764    -0.6595 Religious_Background
+x6      0.6769      0.0981     6.8967    0.0000     0.4845     0.8692  Convert
+x7      0.0989      0.0980     1.0088    0.3131    -0.0933     0.2911  Reawakening
+x8      0.7194      0.1084     6.6390    0.0000     0.5070     0.9318  Immigrant_Generation
+x9      0.0970      0.0972     0.9982    0.3182    -0.0935     0.2875  Education
+x10    -0.0791      0.0968    -0.8169    0.4140    -0.2689     0.1107  Student
+x11    -0.1159      0.0826    -1.4024    0.1608    -0.2779     0.0461  Employment_Status
+x12    -0.2310      0.0958    -2.4111    0.0159    -0.4187    -0.0432  Aspirations
+x13     0.4488      0.0999     4.4950    0.0000     0.2531     0.6446  Plot_Target1
+x14     1.4089      0.1334    10.5647    0.0000     1.1475     1.6703  Criminal_Severity
+x15     0.0664      0.0883     0.7519    0.4521    -0.1067     0.2395  Current_Status
+x16     0.2008      0.0876     2.2912    0.0220     0.0290     0.3726  Group_Membership
+x17    -0.1417      0.1066    -1.3290    0.1839    -0.3506     0.0673  Length_Group
+x18     1.2652      0.1340     9.4429    0.0000     1.0026     1.5278  Radical_Behaviors
+x19     0.1230      0.0775     1.5862    0.1127    -0.0290     0.2750  Alcohol_Drug
+x20     0.1578      0.0815     1.9360    0.0529    -0.0020     0.3175  Close_Family
+x21     0.1446      0.0847     1.7081    0.0876    -0.0213     0.3106  Previous_Criminal_Activity
+x22     0.1615      0.0824     1.9590    0.0501    -0.0001     0.3231  Angry_US
 ==================================================================
+
+
 ```
 
-Logistic Regression Coefficient Descent:
-![Coefficient Descent](https://github.com/jchapman3773/Capstone-1/blob/master/plots/LogisticRegression_Violent_coefficient_descent.png)
+![Coefficient Descent](https://github.com/jchapman3773/Capstone-1/blob/master/plots/L1 LogisticRegression_Violent_coefficient_descent.png)
 
-Logistic Regression Mean Score:
-![Mean Scores](https://github.com/jchapman3773/Capstone-1/blob/master/plots/LogisticRegression_Violent_kfold_mean_scores.png)
+![Mean Scores](https://github.com/jchapman3773/Capstone-1/blob/master/plots/L1 LogisticRegression_Violent_kfold_mean_scores.png)
 
-Logistic Regression ROC Curve:
-![ROC Curve](https://github.com/jchapman3773/Capstone-1/blob/master/plots/LogisticRegression_Violent_ROC_curve.png)
+![ROC Curve](https://github.com/jchapman3773/Capstone-1/blob/master/plots/L1 LogisticRegression_Violent_ROC_curve.png)
+
+
 
 # Results
 Confusion Matrix:
 
 -- | P | N
 -- | -- | --
-P | 223 | 47
-N | 42 | 238
+P | 221 | 49
+N | 47 | 233
 
 Classification Report:
 ```
-              precision    recall  f1-score   support
+           precision     recall  f1-score   support
 
-         0.0       0.84      0.83      0.83       270
-         1.0       0.84      0.85      0.84       280
+      0.0       0.82      0.82      0.82       270
+      1.0       0.83      0.83      0.83       280
 
-         avg       0.84      0.84      0.84       550
+      avg       0.83      0.83      0.83       550
 
 ```
 
-Of the predicted Violent acts, 84% were correctly identified.
+Of the predicted Violent acts, 83% were correctly identified.
 
-My model was able to correctly identify 84% of the Violent acts.
+My model was able to correctly identify 83% of the Violent acts.
 
 # Future Work
 When running my final model, it would often not converge. I made it happen less often by increasing the max_iter from 100 to 500, but it would still occur. In the future, I would like to figure out why the model isn't converging and make it better.

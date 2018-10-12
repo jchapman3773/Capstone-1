@@ -79,7 +79,7 @@ class Data:
 
     def split_data(self,split=0.25):
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X_scale, self.y,
-                                                                    test_size=split, stratify=True, random_state=0)
+                                                                    test_size=split, random_state=0)
 
     def prep_data(self,impute=KNN(5)):
         self.create_clean_data()
