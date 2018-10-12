@@ -1,5 +1,6 @@
 # Predicting Radicalized Individuals
 Project for Data Science Immersive at Galvanize
+
 by Julia Chapman
 
 # Overview
@@ -30,7 +31,7 @@ Immigrant_Generation | Criminal_Severity | Angry_US
 Language_English | Current_Status | -
 
 ## EDA
-1100 out of the 1865 (59%) of the individuals were part of a violent act.
+1100 out of the 1865 (59%) of the individuals were involved in a violent act.
 
 Plot of the correlation heatmap for all the chosen features:
 ![heatmap](https://github.com/jchapman3773/Capstone-1/blob/master/plots/Correlation_Heatmap.png)
