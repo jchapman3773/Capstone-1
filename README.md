@@ -151,9 +151,17 @@ N | 42 | 238
 
          0.0       0.84      0.83      0.83       270
          1.0       0.84      0.85      0.84       280
+         
+         avg       0.84      0.84      0.84       550
+
 ```
-(precision = tp / (total_predict_P))
-(recall = tp / (total_true_P)
+
+Of the predicted Violent acts, 84% were correctly identified.
+My model was able to correctly identify 84% of the Violent acts.
 
 # Future Work
 When running my final model, it would often not converge. I made it happen less often by increasing the max_iter from 100 to 500, but it would still occur. In the future, I would like to figure out why the model isn't converging and make it better.
+
+Future Analysis would be to put in all the feature from the dataset and select 20 or so using RFE and see if it improves the model.
+
+Script for the linear LassoCV and ElasticNetCV models could also be used to predict continuous features like Age.
