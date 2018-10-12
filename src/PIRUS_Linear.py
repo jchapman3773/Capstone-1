@@ -36,7 +36,7 @@ class LinearModel(Data):
         selector = RFE(self.model,features)
         self.selector = selector.fit(self.X_train,self.y_train)
         self.X_train = self.X_train.[:,self.selector.support_]
-        self.X_test = self.X_test.[:,self.selector.support_]
+        self.X_test = self.X_test[:,self.selector.support_]
         self.columns = self.X.loc[:,self.selector.support_].columns
 
     def get_alphas(self):
@@ -67,7 +67,7 @@ class LinearModel(Data):
         mean_mse = mse_path.mean(axis=1)
         plt.plot(self.log_alphas,mse_path,linestyle='--')
         plt.plot(self.log_alphas,mean_mse,label='Mean MSE',linewidth=5,color='k')
-        plt.title(r'MSE for kfolds vs log($\alpha$)')
+        plt.title(rf'{self.name} MSE for kfolds vs log($\alpha$)')
         plt.xlabel(r'log($\alpha$)')
         plt.ylabel('MSE')
         plt.legend()
@@ -90,7 +90,7 @@ class LinearModel(Data):
         plt.semilogx(alphas, scores - std_error, 'b--')
         plt.fill_between(alphas, scores + std_error, scores - std_error, alpha=0.2)
 
-        plt.title('CV score +/- std error')
+        plt.title(f'{self.name} CV score +/- std error')
         plt.ylabel('Score')
         plt.xlabel(r'$\alpha$')
         plt.axhline(np.max(scores), linestyle='--', color='.5')
@@ -127,29 +127,31 @@ class LinearModel(Data):
         impute_scores = []
         for m in self.methods:
             self.clean_split_fit(m)
-            impute_scores += [(m.__class__.__name__,self.print_score(),self.print_score('Test'))]
+            impute_scores += [(m.__class__.__name__,self.print_score(),self.print_score(False))]
         with open(f"../data/{self.name}_impute_scores.txt", "w") as text_file:
-            [print(f'{_[0]}, {_[1]}, {_[2]}',file=text_file) for _ in impute_scores]
+            [print(f'{_[0]} | {_[1]} | {_[2]}',file=text_file) for _ in impute_scores]
         return impute_scores
 
 if __name__ == '__main__':
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
     PIRUS_Lasso = LinearModel(df, LassoCV(cv=10), 'Violent','Lasso')
-    PIRUS_Elastic = LinearModel(df, ElasticNetCV(cv=10), 'Violent','ElasticNet')
+    # PIRUS_Elastic = LinearModel(df, ElasticNetCV(cv=10), 'Violent','ElasticNet')
     PIRUS_Lasso.clean_split_fit()
-    PIRUS_Elastic.clean_split_fit()
+    # PIRUS_Elastic.clean_split_fit()
     PIRUS_Lasso.print_score()
     PIRUS_Lasso.print_score(False)
-    PIRUS_Elastic.print_score()
-    PIRUS_Elastic.plot_mse()
-    plt.close()
-    PIRUS_Elastic.plot_coef_log_alphas()
-    plt.close()
-    PIRUS_Elastic.plot_scores_kfold()
-    plt.close()
+    # PIRUS_Elastic.print_score()
+    # PIRUS_Elastic.plot_mse()
+    # plt.close()
+    # PIRUS_Elastic.plot_coef_log_alphas()
+    # plt.close()
+    # PIRUS_Elastic.plot_scores_kfold()
+    # plt.close()
     PIRUS_Lasso.plot_mse()
     plt.close()
     PIRUS_Lasso.plot_coef_log_alphas()
     plt.close()
     PIRUS_Lasso.plot_scores_kfold()
     plt.close()
+
+    [print(col) for col in PIRUS_Lasso.columns]

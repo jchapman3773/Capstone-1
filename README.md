@@ -8,8 +8,8 @@ __Data__: Individual Radicalization in the United States (PIRUS)
 
 [__Source__](http://www.start.umd.edu/data-tools/profiles-individual-radicalization-united-states-pirus): National Consortium for the Study of Terrorism and Responses to Terrorism
 
-This data covers backgrounds, attributes, and radicalization processes of over 1,800 violent and non-violent extremists who adhere to far right, far left, Islamist, or single issue ideologies in the United States from 1948-2016. These idividuals have radicalized within the United States to the point of committing ideologically motivated illegal violent or non-violent acts, 
-joining a designated terrorist organization, or associated with an extremist organization whose leaders have been indicted of an ideologically motivated violent offense. 
+This data covers backgrounds, attributes, and radicalization processes of over 1,800 violent and non-violent extremists who adhere to far right, far left, Islamist, or single issue ideologies in the United States from 1948-2016. These idividuals have radicalized within the United States to the point of committing ideologically motivated illegal violent or non-violent acts,
+joining a designated terrorist organization, or associated with an extremist organization whose leaders have been indicted of an ideologically motivated violent offense.
 
 My goal is to create a model that predicts, based on key features, whether the individual was part of a violent or non-violent act. The features that I selected are mostly demographic and socioeconomic data, with some additional features cherry picked from the dataset.
 
@@ -37,7 +37,7 @@ Plot of the correlation heatmap for all the chosen features:
 ![heatmap](https://github.com/jchapman3773/Capstone-1/blob/master/plots/Correlation_Heatmap.png)
 Based on the heatmap, none of the features had a high correlation with 'Violent'
 
-Most of the Variance Inflation Factors (VIF) were below 10. The highest ones were Age and Time_US_Months. 
+Most of the Variance Inflation Factors (VIF) were below 10. The highest ones were Age and Time_US_Months.
 
 Here, 'Age' means the individual's age at time of exposure, when their activities/plot first came to public attention.
 
@@ -87,7 +87,7 @@ Lasso Mean Score:
 Lasso Mean MSE:
 ![Lasso Mean MSE](https://github.com/jchapman3773/Capstone-1/blob/master/plots/Lasso_Violent_MSE_plot.png)
 
-Then I tried LogisticRegressionCV with L1 regularization as a penalizer. This performed much better. 
+Then I tried LogisticRegressionCV with L1 regularization as a penalizer. This performed much better.
 The test and train scores were similar every time the model was ran.
 
 ```
@@ -152,7 +152,7 @@ Classification Report:
 
          0.0       0.84      0.83      0.83       270
          1.0       0.84      0.85      0.84       280
-         
+
          avg       0.84      0.84      0.84       550
 
 ```

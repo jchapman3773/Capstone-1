@@ -83,7 +83,7 @@ class LogisticModel(Data):
         plt.semilogx(Cs, scores - std_error, 'b--')
         plt.fill_between(Cs, scores + std_error, scores - std_error, alpha=0.2)
 
-        plt.title('CV score +/- std error')
+        plt.title(f'{self.name} CV score +/- std error')
         plt.ylabel('Score')
         plt.xlabel('Cs')
         plt.axhline(np.max(scores), linestyle='--', color='.5')
@@ -97,7 +97,7 @@ class LogisticModel(Data):
         plt.plot([0, 1], [0, 1], color='navy', linestyle='--')
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title('ROC Curve')
+        plt.title(f'{self.name} ROC Curve')
         plt.legend(loc="lower right")
         plt.savefig(f'../plots/{self.name}_{self.predict}_ROC_curve')
 
@@ -112,7 +112,7 @@ class LogisticModel(Data):
     def print_confusion_matrix(self):
         tn, fp, fn, tp = confusion_matrix(self.y_test,self.model.predict(self.X_test)).ravel()
         with open(f"../data/{self.name}_confusion_matrix.txt", "w") as text_file:
-            print(f'{tn},{fp}\n{fn},{tp}',file=text_file)
+            print(f'{tn} | {fp}\n{fn} | {tp}',file=text_file)
         return tn, fp, fn, tp
 
     def print_classification_report(self):
@@ -122,12 +122,12 @@ class LogisticModel(Data):
     def print_vifs(self):
         with open(f"../data/{self.name}_vifs.txt", "w") as text_file:
             for idx, col in enumerate(self.X.columns):
-                print(f"{col}, {outliers_influence.variance_inflation_factor(self.X.values,idx)}",file=text_file)
+                print(f"{col} | {outliers_influence.variance_inflation_factor(self.X.values,idx)}",file=text_file)
 
     def print_coefs(self):
         with open(f"../data/{self.name}_coefs.txt", "w") as text_file:
             for idx, col in enumerate(self.columns):
-                print(f"{col}, {self.model.coef_[0][idx]}",file=text_file)
+                print(f"{col} | {self.model.coef_[0][idx]}",file=text_file)
 
     def print_logistic_summary(self):
         logistic_model = sm.Logit(self.y_train, self.X_train).fit()
@@ -138,31 +138,31 @@ class LogisticModel(Data):
         impute_scores = []
         for m in self.methods:
             self.clean_split_fit(m)
-            impute_scores += [(m.__class__.__name__,self.print_score(),self.print_score('Test'))]
+            impute_scores += [(m.__class__.__name__,self.print_score(),self.print_score(True))]
         with open(f"../data/{self.name}_impute_scores.txt", "w") as text_file:
-            [print(f'{_[0]}, {_[1]}, {_[2]}',file=text_file) for _ in impute_scores]
+            [print(f'{_[0]} | {_[1]} | {_[2]}',file=text_file) for _ in impute_scores]
         return impute_scores
 
 if __name__ == '__main__':
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
-    PIRUS = LogisticModel(df, LogisticRegressionCV(penalty='l1',cv=10,solver='saga',max_iter=500), 'Violent','LogisticRegression')
+    PIRUS = LogisticModel(df, LogisticRegressionCV(penalty='l1',cv=10,solver='saga',max_iter=500), 'Violent','L1 LogisticRegression')
     PIRUS.clean_split_fit()
 
-    # PIRUS.print_score()
-    # PIRUS.print_score(False)
-    #
-    # PIRUS.plot_coef_log_alphas()
-    # plt.close()
-    # PIRUS.plot_scores_kfold()
-    # plt.close()
-    # PIRUS.plot_ROC()
-    # plt.close()
-    # # PIRUS.make_heatmap()
-    #
-    # PIRUS.print_coefs()
-    # PIRUS.print_vifs()
-    # PIRUS.print_logistic_summary()
-    # PIRUS.print_confusion_matrix()
-    # PIRUS.print_classification_report()
-    print(PIRUS.clean_data.columns)
-    print(PIRUS.columns)
+    PIRUS.print_score()
+    PIRUS.print_score(False)
+
+    PIRUS.plot_coef_log_alphas()
+    plt.close()
+    PIRUS.plot_scores_kfold()
+    plt.close()
+    PIRUS.plot_ROC()
+    plt.close()
+    # PIRUS.make_heatmap()
+
+    PIRUS.print_coefs()
+    PIRUS.print_vifs()
+    PIRUS.print_logistic_summary()
+    PIRUS.print_confusion_matrix()
+    PIRUS.print_classification_report()
+
+    [print(col) for col in PIRUS.columns]
