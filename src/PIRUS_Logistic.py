@@ -145,7 +145,7 @@ class LogisticModel(Data):
 
 if __name__ == '__main__':
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
-    PIRUS = LogisticModel(df, LogisticRegressionCV(penalty='l1',cv=10,solver='saga',max_iter=500), 'Violent','L1 LogisticRegression')
+    PIRUS = LogisticModel(df, LogisticRegressionCV(penalty='l1',cv=10,solver='saga',max_iter=500), 'Violent','L1_LogisticRegression')
     PIRUS.clean_split_fit()
 
     PIRUS.print_score()
