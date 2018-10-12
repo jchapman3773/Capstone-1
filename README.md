@@ -88,7 +88,7 @@ At first, I tried LassoCV and ElasticNetCV as my models, but they didn't perform
 Then I tried LogisticRegressionCV with L1 regularization as a penalizer. This performed much better.
 The test and train scores were similar every time the model was ran.
 
-Gender had the most negative coefficient, but it might be biased because only about 10% of the data population were female.
+Gender had the most negative coefficient, but it might be biased because only about 10% of the data's population were female.
 
 Abuse_Child and Criminal_Severity both had high positive coefficients. Criminal_Severity is the extent of the individual's criminal activity by time of exposure, and so probably has intisic correlation to the individual's participation in violent acts.
 
