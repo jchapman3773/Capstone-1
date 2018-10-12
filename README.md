@@ -37,7 +37,9 @@ Plot of the correlation heatmap for all the chosen features:
 ![heatmap](https://github.com/jchapman3773/Capstone-1/blob/master/plots/Correlation_Heatmap.png)
 Based on the heatmap, none of the features had a high correlation with 'Violent'
 
-Most of the Variance Inflation Factors (VIF) were below 10. The highest ones were Age and Time_US_Months. Here, 'Age' means the individual's age at time of exposure, when their activities/plot first came to public attention.
+Most of the Variance Inflation Factors (VIF) were below 10. The highest ones were Age and Time_US_Months. 
+
+Here, 'Age' means the individual's age at time of exposure, when their activities/plot first came to public attention.
 
 Feature | VIF | Feature | VIF
 --- | --- | --- | ---
