@@ -146,23 +146,23 @@ class LogisticModel(Data):
 if __name__ == '__main__':
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
     PIRUS = LogisticModel(df, LogisticRegressionCV(penalty='l1',cv=10,solver='saga',max_iter=500), 'Violent','L1_LogisticRegression')
-    PIRUS.clean_split_fit()
+    # PIRUS.clean_split_fit()
 
-    PIRUS.print_score()
-    PIRUS.print_score(False)
-
-    PIRUS.plot_coef_log_alphas()
-    plt.close()
-    PIRUS.plot_scores_kfold()
-    plt.close()
-    PIRUS.plot_ROC()
-    plt.close()
-    # PIRUS.make_heatmap()
-
-    PIRUS.print_coefs()
-    PIRUS.print_vifs()
-    PIRUS.print_logistic_summary()
-    PIRUS.print_confusion_matrix()
-    PIRUS.print_classification_report()
-
-    [print(col) for col in PIRUS.columns]
+    # PIRUS.print_score()
+    # PIRUS.print_score(False)
+    #
+    # PIRUS.plot_coef_log_alphas()
+    # plt.close()
+    # PIRUS.plot_scores_kfold()
+    # plt.close()
+    # PIRUS.plot_ROC()
+    # plt.close()
+    # # PIRUS.make_heatmap()
+    #
+    # PIRUS.print_coefs()
+    # PIRUS.print_vifs()
+    # PIRUS.print_logistic_summary()
+    # PIRUS.print_confusion_matrix()
+    # PIRUS.print_classification_report()
+    #
+    # [print(col) for col in PIRUS.columns]

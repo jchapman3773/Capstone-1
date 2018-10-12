@@ -98,7 +98,7 @@ class Data:
         plt.savefig('../plots/Correlation_Heatmap.png')
 
     def plot_scatter(self,var1,var2):
-        plt.scatter(self.df[var1],self.df[var2],alpha=0.5)
+        plt.scatter(self.df[var2],self.df[var1],alpha=0.5)
         plt.ylabel(var1)
         plt.xlabel(var2)
         plt.title(f'{var1} vs {var2}')
