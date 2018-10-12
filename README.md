@@ -16,7 +16,7 @@ My goal is to create a model that predicts, based on key features, whether the i
 # Data
 The dataset has 110 features (145 columns due to multiple columns for feature category). Unknown values were imputted as -99, so I imported -99 as NaN. -88 was used as an imput for "Does not apply". For example, in Language_English, -88 represented native english speakers, 1 for non-native english speakers, and 0 for non-english speakers. Because of this, I manually checked the codebook for each column with -88s and replaced them with NaN, 1, 0, etc based on my judgment.
 
-The chosen columns were: | - | (descriptions available in the attached codebook)
+The chosen columns were: |   | (descriptions available in the attached codebook)
 --- | --- | ---
 Broad_Ethnicity | Education | Group_Membership
 Age | Student | Length_Group
@@ -28,7 +28,7 @@ Reawakening | Aspirations | Alcohol_Drug
 Residency_Status | Violent | Close_Family
 Time_US_Months | Plot_Target1 | Previous_Criminal_Activity
 Immigrant_Generation | Criminal_Severity | Angry_US
-Language_English | Current_Status | -
+Language_English | Current_Status |  
 
 ## EDA
 1100 out of the 1865 (59%) of the individuals were involved in a violent act.
@@ -128,12 +128,15 @@ x22     0.1615      0.0824     1.9590    0.0501    -0.0001     0.3231
 
 ```
 
-![Coefficient Descent](https://github.com/jchapman3773/Capstone-1/blob/master/plots/L1_LogisticRegression_Violent_coefficient_descent.png)
+![Coefficient Descent, L1](https://github.com/jchapman3773/Capstone-1/blob/master/plot/L1_LogisticRegression_Violent_coefficient_descent.png)
 
-![Mean Scores](https://github.com/jchapman3773/Capstone-1/blob/master/plots/L1 LogisticRegression_Violent_kfold_mean_scores.png)
+![Mean Scores, L1](https://github.com/jchapman3773/Capstone-1/blob/master/plots/L1_LogisticRegression_Violent_kfold_mean_scores.png)
 
-![ROC Curve](https://github.com/jchapman3773/Capstone-1/blob/master/plots/L1 LogisticRegression_Violent_ROC_curve.png)
+![ROC Curve, L1](https://github.com/jchapman3773/Capstone-1/blob/master/plots/L1_LogisticRegression_Violent_ROC_curve.png)
 
+Logistic regression with a L2 penalizer had different coefficient paths, but the end results were the same.
+
+![Coefficient Descent, L2](https://github.com/jchapman3773/Capstone-1/blob/master/plots/L2_LogisticRegression_Violent_coefficient_descent.png)
 
 
 # Results
