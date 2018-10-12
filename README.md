@@ -102,28 +102,28 @@ No. Iterations:     7.0000
 ---------------------------------------------------------------------
         Coef.     Std.Err.       z       P>|z|      [0.025     0.975]
 ---------------------------------------------------------------------
-x1     -0.3831      0.0900    -4.2567    0.0000    -0.5595    -0.2067
-x2      0.4008      0.1116     3.5913    0.0003     0.1821     0.6196
-x3     -0.1161      0.0981    -1.1832    0.2367    -0.3084     0.0762
-x4      0.2836      0.0748     3.7927    0.0001     0.1370     0.4301
-x5     -0.8680      0.1064    -8.1603    0.0000    -1.0764    -0.6595
-x6      0.6769      0.0981     6.8967    0.0000     0.4845     0.8692
-x7      0.0989      0.0980     1.0088    0.3131    -0.0933     0.2911
-x8      0.7194      0.1084     6.6390    0.0000     0.5070     0.9318
-x9      0.0970      0.0972     0.9982    0.3182    -0.0935     0.2875
-x10    -0.0791      0.0968    -0.8169    0.4140    -0.2689     0.1107
-x11    -0.1159      0.0826    -1.4024    0.1608    -0.2779     0.0461
-x12    -0.2310      0.0958    -2.4111    0.0159    -0.4187    -0.0432
-x13     0.4488      0.0999     4.4950    0.0000     0.2531     0.6446
-x14     1.4089      0.1334    10.5647    0.0000     1.1475     1.6703
-x15     0.0664      0.0883     0.7519    0.4521    -0.1067     0.2395
-x16     0.2008      0.0876     2.2912    0.0220     0.0290     0.3726
-x17    -0.1417      0.1066    -1.3290    0.1839    -0.3506     0.0673
-x18     1.2652      0.1340     9.4429    0.0000     1.0026     1.5278
-x19     0.1230      0.0775     1.5862    0.1127    -0.0290     0.2750
-x20     0.1578      0.0815     1.9360    0.0529    -0.0020     0.3175
-x21     0.1446      0.0847     1.7081    0.0876    -0.0213     0.3106
-x22     0.1615      0.0824     1.9590    0.0501    -0.0001     0.3231
+x1     -0.3831      0.0900    -4.2567    0.0000    -0.5595    -0.2067  Broad_Ethnicity
+x2      0.4008      0.1116     3.5913    0.0003     0.1821     0.6196  Age
+x3     -0.1161      0.0981    -1.1832    0.2367    -0.3084     0.0762  Marital_Status
+x4      0.2836      0.0748     3.7927    0.0001     0.1370     0.4301  Children
+x5     -0.8680      0.1064    -8.1603    0.0000    -1.0764    -0.6595  Gender
+x6      0.6769      0.0981     6.8967    0.0000     0.4845     0.8692  Religious_Background
+x7      0.0989      0.0980     1.0088    0.3131    -0.0933     0.2911  Convert
+x8      0.7194      0.1084     6.6390    0.0000     0.5070     0.9318  Reawakening
+x9      0.0970      0.0972     0.9982    0.3182    -0.0935     0.2875  Time_US_Months
+x10    -0.0791      0.0968    -0.8169    0.4140    -0.2689     0.1107  Immigrant_Generation
+x11    -0.1159      0.0826    -1.4024    0.1608    -0.2779     0.0461  Employment_Status
+x12    -0.2310      0.0958    -2.4111    0.0159    -0.4187    -0.0432  Aspirations
+x13     0.4488      0.0999     4.4950    0.0000     0.2531     0.6446  Plot_Target1
+x14     1.4089      0.1334    10.5647    0.0000     1.1475     1.6703  Criminal_Severity
+x15     0.0664      0.0883     0.7519    0.4521    -0.1067     0.2395  Current_Status
+x16     0.2008      0.0876     2.2912    0.0220     0.0290     0.3726  Length_Group
+x17    -0.1417      0.1066    -1.3290    0.1839    -0.3506     0.0673  Radical_Behaviors
+x18     1.2652      0.1340     9.4429    0.0000     1.0026     1.5278  Abuse_Child
+x19     0.1230      0.0775     1.5862    0.1127    -0.0290     0.2750  Psychological
+x20     0.1578      0.0815     1.9360    0.0529    -0.0020     0.3175  Close_Family
+x21     0.1446      0.0847     1.7081    0.0876    -0.0213     0.3106  Previous_Criminal_Activity
+x22     0.1615      0.0824     1.9590    0.0501    -0.0001     0.3231  Angry_US
 ==================================================================
 
 ```
@@ -164,6 +164,6 @@ My model was able to correctly identify 83% of the Violent acts.
 # Future Work
 When running my final model, it would often not converge. I made it happen less often by increasing the max_iter from 100 to 500, but it would still occur. In the future, I would like to figure out why the model isn't converging and make it better.
 
-Future Analysis would be to put in all the feature from the dataset and select 20 or so using RFE and see if it improves the model.
+Future Analysis would be to put in all the feature from the dataset and select 20 or so using RFE and see if it improves the model. SOme features that have sparse data could also be removed by looking at missingno.
 
 Script for the linear LassoCV and ElasticNetCV models could also be used to predict continuous features like Age.
