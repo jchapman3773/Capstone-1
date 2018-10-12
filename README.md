@@ -167,3 +167,5 @@ When running my final model, it would often not converge. I made it happen less 
 Future Analysis would be to put in all the feature from the dataset and select 20 or so using RFE and see if it improves the model. SOme features that have sparse data could also be removed by looking at missingno. Age or TIme_US_Months should be removed for multicollinearity. Criminal_Severity should be removed since it is intrinsically correlated.
 
 Script for the linear LassoCV and ElasticNetCV models could also be used to predict continuous features like Age.
+
+Census data could be brought in to determine if the population in the PIRUS data set are statistically different from the average population.
