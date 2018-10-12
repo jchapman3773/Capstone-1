@@ -146,6 +146,7 @@ Confusion Matrix:
 P | 223 | 47
 N | 42 | 238
 
+Classification Report:
 ```
               precision    recall  f1-score   support
 
@@ -157,6 +158,7 @@ N | 42 | 238
 ```
 
 Of the predicted Violent acts, 84% were correctly identified.
+
 My model was able to correctly identify 84% of the Violent acts.
 
 # Future Work
