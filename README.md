@@ -79,13 +79,8 @@ MatrixFactorization | 1858 | 0.719
 
 Before fitting my data, I used scikit-learn's RFE to select for 22 of my 32 features to make it easier to model.
 
-At first, I tried LassoCV and ElasticNetCV as my models, but they didn't perform very well.
+For my model, I used LogisticRegressionCV with L1 regularization as a penalizer.
 
-![Lasso Mean Score](https://github.com/jchapman3773/Capstone-1/blob/master/plots/Lasso_Violent_kfold_mean_scores.png)
-
-![Lasso Mean MSE](https://github.com/jchapman3773/Capstone-1/blob/master/plots/Lasso_Violent_MSE_plot.png)
-
-Then I tried LogisticRegressionCV with L1 regularization as a penalizer. This performed much better.
 The test and train scores were similar every time the model was ran.
 
 Gender had the most negative coefficient, but it might be biased because only about 10% of the data's population were female.
