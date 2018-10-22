@@ -38,9 +38,12 @@ class Data:
     def create_clean_data(self):
         columns = list(self.df.loc[:,'Broad_Ethnicity':'Aspirations'].columns)
         columns += ['Violent','Plot_Target1','Criminal_Severity','Current_Status','Group_Membership',
-                    'Length_Group','Radical_Behaviors','Radical_Beliefs','Abuse_Child','Psychological',
-                    'Alcohol_Drug','Close_Family','Previous_Criminal_Activity','Angry_US']
+                    'Length_Group','Radical_Beliefs','Abuse_Child','Psychological',
+                    'Alcohol_Drug','Angry_US']
         columns.remove('Age_Child')
+        columns.remove('Time_US_Months')
+        columns.remove('Language_English')
+        columns.remove('Social_Stratum_Childhood')
         self.df.Plot_Target1.replace(-88,0,inplace=True)
         self.df.Length_Group.replace(-88,0,inplace=True)
         self.df.Gender.replace({1:0,2:1},inplace=True)
