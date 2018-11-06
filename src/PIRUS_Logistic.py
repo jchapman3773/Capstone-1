@@ -36,7 +36,7 @@ class LogisticModel(Data):
         self.columns = None
         self.scaler = XyScaler()
 
-    def select_features(self,features=22):
+    def select_features(self,features=15):
         selector = RFE(self.model,features)
         self.selector = selector.fit(self.X_train,self.y_train)
         self.X_train = self.X_train[:,self.selector.support_]
@@ -145,24 +145,29 @@ class LogisticModel(Data):
 
 if __name__ == '__main__':
     df = pd.read_csv('../data/PIRUS.csv',na_values=['-99'])
-    PIRUS = LogisticModel(df, LogisticRegressionCV(penalty='l1',cv=10,solver='saga',max_iter=500), 'Violent','L1_LogisticRegression')
-    # PIRUS.clean_split_fit()
+    PIRUS_L1 = LogisticModel(df, LogisticRegressionCV(penalty='l1',cv=10,solver='saga',max_iter=500), 'Violent','L1_LogisticRegression')
+    # PIRUS_L2 = LogisticModel(df, LogisticRegressionCV(penalty='l2',cv=10,solver='saga',max_iter=500), 'Violent','L2_LogisticRegression')
+    PIRUS_L1.clean_split_fit()
+    # PIRUS_L2.clean_split_fit()
 
-    # PIRUS.print_score()
-    # PIRUS.print_score(False)
-    #
-    # PIRUS.plot_coef_log_alphas()
-    # plt.close()
-    # PIRUS.plot_scores_kfold()
-    # plt.close()
-    # PIRUS.plot_ROC()
-    # plt.close()
+    PIRUS_L1.print_score()
+    PIRUS_L1.print_score(False)
+
+    PIRUS_L1.plot_coef_log_alphas()
+    plt.close()
+    PIRUS_L1.plot_scores_kfold()
+    plt.close()
+    PIRUS_L1.plot_ROC()
+    plt.close()
     # # PIRUS.make_heatmap()
     #
     # PIRUS.print_coefs()
-    # PIRUS.print_vifs()
-    # PIRUS.print_logistic_summary()
+    # PIRUS_L1.print_vifs()
+    # PIRUS_L1.print_logistic_summary()
+    # PIRUS_L1.print_classification_report()
+    # PIRUS_L2.print_vifs()
+    # PIRUS_L2.print_logistic_summary()
+    # PIRUS_L2.print_classification_report()
     # PIRUS.print_confusion_matrix()
-    # PIRUS.print_classification_report()
     #
     # [print(col) for col in PIRUS.columns]
